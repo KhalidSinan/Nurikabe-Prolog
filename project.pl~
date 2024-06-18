@@ -19,7 +19,7 @@ fxd_cell(7,7,6).
 
 % solve_cell()
 solve_cell(1,1,blue).
-solve_cell(1,2,green).
+solve_cell(1,1,blue).
 solve_cell(1,3,green).
 solve_cell(1,4,green).
 solve_cell(1,5,blue).
