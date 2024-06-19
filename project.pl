@@ -41,7 +41,6 @@ solve_cell(3,3,blue).
 solve_cell(3,4,green).
 solve_cell(3,5,blue).
 solve_cell(3,6,green).
-solve_cell(3,6,blue).
 solve_cell(3,7,green).
 
 
@@ -101,13 +100,23 @@ no_2_by_2_sea(I, J) :-
     no_2_by_2_sea(I1, J),
     no_2_by_2_sea(I, J1).
 
+remove_empty_lists([], []).
+remove_empty_lists([H|T], [H|Result]) :-
+    H \= [],
+    remove_empty_lists(T, Result).
+remove_empty_lists([[]|T], Result) :-
+    remove_empty_lists(T, Result).
 
-
-
-
-
-
-
+nearby_cells(I, J, [H1, H2, H3, H4]) :-
+    solve_cell(I, J, Color),
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    (solve_cell(I1, J, Color) -> H1 = (I1, J) ; H1 = []),
+    (solve_cell(I2, J, Color) -> H2 = (I2, J) ; H2 = []),
+    (solve_cell(I, J1, Color) -> H3 = (I, J1) ; H3 = []),
+    (solve_cell(I, J2, Color) -> H4 = (I, J2) ; H4 = []).
 
 
 
