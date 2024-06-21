@@ -100,12 +100,6 @@ no_2_by_2_sea(I, J) :-
     no_2_by_2_sea(I1, J),
     no_2_by_2_sea(I, J1).
 
-remove_empty_lists([], []).
-remove_empty_lists([H|T], [H|Result]) :-
-    H \= [],
-    remove_empty_lists(T, Result).
-remove_empty_lists([[]|T], Result) :-
-    remove_empty_lists(T, Result).
 
 nearby_cells(I, J, [H1, H2, H3, H4]) :-
     solve_cell(I, J, Color),
@@ -118,11 +112,35 @@ nearby_cells(I, J, [H1, H2, H3, H4]) :-
     (solve_cell(I, J1, Color) -> H3 = (I, J1) ; H3 = []),
     (solve_cell(I, J2, Color) -> H4 = (I, J2) ; H4 = []).
 
+remove_empty_lists([], []).
+remove_empty_lists([H|T], [H|Result]) :-
+    H \= [],
+    remove_empty_lists(T, Result).
+remove_empty_lists([[]|T], Result) :-
+    remove_empty_lists(T, Result).
+
+iterate_and_add([], _, AllCells, AllCells).
+iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
+    (member((I,J), Visited) ->
+        iterate_and_add(T, Visited, Acc, Result)
+    ;
+        add_element((I,J), Acc, NewAcc),
+        all_nearby_cells(I, J, NewAcc, NewVisited, UpdatedAcc),
+        iterate_and_add(T, NewVisited, UpdatedAcc, Result)
+    ).
+
+all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
+    nearby_cells(I,J,Cells),
+    remove_empty_lists(Cells,FilteredCells),
+
+    iterate_and_add(FilteredCells, [ (I, J) | Acc], Acc, UpdatedAcc),
+    NewVisited = [ (I, J) | Acc].
 
 
+all_nearby_cells(I, J, AllCells) :-
+    all_nearby_cells(I, J, [], [(I, J)], AllCells).
 
-
-
+add_element((X, Y), List, [(X,Y) | List]).
 
 
 
