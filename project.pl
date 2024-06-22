@@ -100,13 +100,15 @@ no_2_by_2_sea(I, J) :-
     no_2_by_2_sea(I1, J),
     no_2_by_2_sea(I, J1).
 
-
+# get the adjacent cells for specific cell.
 nearby_cells(I, J, [H1, H2, H3, H4]) :-
-    solve_cell(I, J, Color),
+    solve_cell(I, J, Color), # get the cell color.
     I1 is I - 1,
     I2 is I + 1,
     J1 is J - 1,
     J2 is J + 1,
+    # if the adjacent cell have the same color as the specific cell,
+    # add it to the list else add empty list.
     (solve_cell(I1, J, Color) -> H1 = (I1, J) ; H1 = []),
     (solve_cell(I2, J, Color) -> H2 = (I2, J) ; H2 = []),
     (solve_cell(I, J1, Color) -> H3 = (I, J1) ; H3 = []),
@@ -121,6 +123,7 @@ remove_empty_lists([[]|T], Result) :-
 
 iterate_and_add([], _, AllCells, AllCells).
 iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
+    # check if (I,J) exist in (Visited) list.
     (member((I,J), Visited) ->
         iterate_and_add(T, Visited, Acc, Result)
     ;
@@ -129,15 +132,26 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
         iterate_and_add(T, NewVisited, UpdatedAcc, Result)
     ).
 
+
+# return list of cells that form an island or a sea.
+# 1- get the adjacent cells for the current cell. => ex: [(1,3),[],(2,3),[]]
+# 2- remove the empty lists from the adjacent cells list (Cells) ex: [(1,3),(2,3)].
+# 3- for each adjacent cell do the following steps:
+#    - check if we have visited it previously using "member" on (Visited).
+#    - if visited => skip the cell.
+#    - if not visited => add the cell to the current result list (Acc) 
+#      and repeat the same algorithm for this cell.
 all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
-    nearby_cells(I,J,Cells),
+    nearby_cells(I,J,Cells), 
     remove_empty_lists(Cells,FilteredCells),
 
     iterate_and_add(FilteredCells, [ (I, J) | Acc], Acc, UpdatedAcc),
-    NewVisited = [ (I, J) | Acc].
-
+    # update the visited list (current visited cell + all the visited cells = new visited list)
+    NewVisited = [ (I, J) | Acc]. 
 
 all_nearby_cells(I, J, AllCells) :-
+    # if the passed cell was fixed cell of number "1", 
+    #then the result is the passed cell only. 
     fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
     all_nearby_cells(I, J, [], [(I, J)], AllCells).
 
