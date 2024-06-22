@@ -1,4 +1,3 @@
-
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
 fxd_cell(1,6,1).
@@ -139,19 +138,19 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
 % 3- for each adjacent cell do the following steps:
 %    - check if we have visited it previously using "member" on (Visited).
 %    - if visited => skip the cell.
-%    - if not visited => add the cell to the current result list (Acc) 
+%    - if not visited => add the cell to the current result list (Acc)
 %      and repeat the same algorithm for this cell.
 all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
-    nearby_cells(I,J,Cells), 
+    nearby_cells(I,J,Cells),
     remove_empty_lists(Cells,FilteredCells),
 
     iterate_and_add(FilteredCells, [ (I, J) | Acc], Acc, UpdatedAcc),
     % update the visited list (current visited cell + all the visited cells = new visited list)
-    NewVisited = [ (I, J) | Acc]. 
+    NewVisited = [ (I, J) | Acc].
 
 all_nearby_cells(I, J, AllCells) :-
-    % if the passed cell was fixed cell of number 1, 
-    % then the result is the passed cell only. 
+    % if the passed cell was fixed cell of number 1,
+    % then the result is the passed cell only.
     fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
     all_nearby_cells(I, J, [], [(I, J)], AllCells).
 
@@ -188,6 +187,29 @@ one_fixed_cell_in_island:- true.
 
 
 
+sum_list_of_value([], 0).
+sum_list_of_value([H|T],Sum):-
+    sum_list_of_value(T,Sum1),
+    Sum is H+Sum1.
 
 
+get_all_fxd_cells(Sum):-
+    findall(Value,fxd_cell(_,_,Value),ListOfValue),
+    sum_list_of_value(ListOfValue,Sum).
+
+
+calculate_number_of_cells_sea(Sum):-
+    solve_cell(I,J,blue),
+    all_nearby_cells(I,J,List),
+    length(List, Sum),!.
+
+solved_cell_count(Count) :-
+    findall(_, solve_cell(_,_,_), Cells),
+    length(Cells, Count).
+
+one_sea:-
+    calculate_number_of_cells_sea(Sum1),
+    get_all_fxd_cells(Sum2),
+    solved_cell_count(Sum3),
+    Sum1+Sum2-1 =:= Sum3.
 
