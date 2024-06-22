@@ -144,7 +144,32 @@ all_nearby_cells(I, J, AllCells) :-
 add_element((X, Y), List, [(X,Y) | List]).
 
 
+% Base Case
+loop_to_count_fxd_cells_in_island([], 0).
+% If Statement == true
 
+loop_to_count_fxd_cells_in_island([(I,J)|T], CNT):-
+    ( fxd_cell(I,J,_) ->
+      loop_to_count_fxd_cells_in_island(T, CNT1),
+      CNT is CNT1 + 1
+    ;
+        loop_to_count_fxd_cells_in_island(T, CNT)
+    ).
+
+% One Fixed Cell In Island
+one_fixed_cell_in_island:-
+    % Loop On Fixed Cells
+    fxd_cell(I, J, _), % Now I Have I and J
+    % Get All Cells For The Island
+    all_nearby_cells(I,J, S),
+    % Loop And Count Fixed Cells in Island
+    loop_to_count_fxd_cells_in_island(S,CNT),
+    % Check If CNT > 1, then false
+    CNT > 1,!,
+    % To Backtrack
+    fail.
+
+one_fixed_cell_in_island:- true.
 
 
 
