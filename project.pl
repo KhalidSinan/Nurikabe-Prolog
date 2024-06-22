@@ -184,7 +184,7 @@ one_fixed_cell_in_island:-
 
 one_fixed_cell_in_island:- true.
 
-<<<<<<< HEAD
+
 
 
 
@@ -203,7 +203,7 @@ find_cells_with_numbers() :-
      walk_on_cells_with_number(List).
 
 
-% in this function i will walk on every cells in list and send cell to other function 
+% in this function i will walk on every cells in list and send cell to other function
 % " in short this func its work like a for loop  "
 
 walk_on_cells_with_number([]).
@@ -211,13 +211,13 @@ walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
  count_of_nearby_cells(X,Y,Value),
     walk_on_cells_with_number(Tail).
 
-% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "  
+% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
 
 # hamza-end
->>>>>>> 900af995b5979825c98b8113b42063f67aec699f
+
 
 
 get_all_fxd_cells(Sum):-
