@@ -138,6 +138,7 @@ all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
 
 
 all_nearby_cells(I, J, AllCells) :-
+    fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
     all_nearby_cells(I, J, [], [(I, J)], AllCells).
 
 add_element((X, Y), List, [(X,Y) | List]).
