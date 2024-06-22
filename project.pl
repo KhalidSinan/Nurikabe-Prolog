@@ -187,10 +187,37 @@ one_fixed_cell_in_island:- true.
 
 
 
+
 sum_list_of_value([], 0).
 sum_list_of_value([H|T],Sum):-
     sum_list_of_value(T,Sum1),
     Sum is H+Sum1.
+=======
+# hamza -start
+% island_number_equals_size :
+
+% in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
+
+find_cells_with_numbers() :-
+    findall((X,Y,Value),fxd_cell(X,Y,Value), List),
+     walk_on_cells_with_number(List).
+
+
+% in this function i will walk on every cells in list and send cell to other function
+% " in short this func its work like a for loop  "
+
+walk_on_cells_with_number([]).
+walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
+ count_of_nearby_cells(X,Y,Value),
+    walk_on_cells_with_number(Tail).
+
+% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
+
+count_of_nearby_cells(X,Y,Value) :-
+    all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
+
+# hamza-end
+
 
 
 get_all_fxd_cells(Sum):-
