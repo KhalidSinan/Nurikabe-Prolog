@@ -1,3 +1,4 @@
+
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
 fxd_cell(1,6,1).
@@ -99,13 +100,15 @@ no_2_by_2_sea(I, J) :-
     no_2_by_2_sea(I1, J),
     no_2_by_2_sea(I, J1).
 
-
+% get the adjacent cells for specific cell.
 nearby_cells(I, J, [H1, H2, H3, H4]) :-
-    solve_cell(I, J, Color),
+    solve_cell(I, J, Color), % get the cell color.
     I1 is I - 1,
     I2 is I + 1,
     J1 is J - 1,
     J2 is J + 1,
+    % if the adjacent cell have the same color as the specific cell,
+    % add it to the list else add empty list.
     (solve_cell(I1, J, Color) -> H1 = (I1, J) ; H1 = []),
     (solve_cell(I2, J, Color) -> H2 = (I2, J) ; H2 = []),
     (solve_cell(I, J1, Color) -> H3 = (I, J1) ; H3 = []),
@@ -120,6 +123,7 @@ remove_empty_lists([[]|T], Result) :-
 
 iterate_and_add([], _, AllCells, AllCells).
 iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
+    % check if (I,J) exist in (Visited) list.
     (member((I,J), Visited) ->
         iterate_and_add(T, Visited, Acc, Result)
     ;
@@ -128,7 +132,6 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
         iterate_and_add(T, NewVisited, UpdatedAcc, Result)
     ).
 
-<<<<<<< Updated upstream
 
 % return list of cells that form an island or a sea.
 % 1- get the adjacent cells for the current cell. => ex: [(1,3),[],(2,3),[]]
@@ -136,28 +139,19 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
 % 3- for each adjacent cell do the following steps:
 %    - check if we have visited it previously using "member" on (Visited).
 %    - if visited => skip the cell.
-%    - if not visited => add the cell to the current result list (Acc)
+%    - if not visited => add the cell to the current result list (Acc) 
 %      and repeat the same algorithm for this cell.
-=======
->>>>>>> Stashed changes
 all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
-    nearby_cells(I,J,Cells),
+    nearby_cells(I,J,Cells), 
     remove_empty_lists(Cells,FilteredCells),
 
     iterate_and_add(FilteredCells, [ (I, J) | Acc], Acc, UpdatedAcc),
-<<<<<<< Updated upstream
     % update the visited list (current visited cell + all the visited cells = new visited list)
-    NewVisited = [ (I, J) | Acc].
+    NewVisited = [ (I, J) | Acc]. 
 
 all_nearby_cells(I, J, AllCells) :-
-    % if the passed cell was fixed cell of number 1,
-    % then the result is the passed cell only.
-=======
-    NewVisited = [ (I, J) | Acc].
-
-
-all_nearby_cells(I, J, AllCells) :-
->>>>>>> Stashed changes
+    % if the passed cell was fixed cell of number 1, 
+    % then the result is the passed cell only. 
     fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
     all_nearby_cells(I, J, [], [(I, J)], AllCells).
 
@@ -185,17 +179,16 @@ one_fixed_cell_in_island:-
     % Loop And Count Fixed Cells in Island
     loop_to_count_fxd_cells_in_island(S,CNT),
     % Check If CNT > 1, then false
-    write(CNT),
     CNT > 1,!,
     % To Backtrack
     fail.
 
 one_fixed_cell_in_island:- true.
 
-<<<<<<< HEAD
+
+
 
 <<<<<<< Updated upstream
-
 
 sum_list_of_value([], 0).
 sum_list_of_value([H|T],Sum):-
@@ -212,7 +205,7 @@ find_cells_with_numbers() :-
      walk_on_cells_with_number(List).
 
 
-% in this function i will walk on every cells in list and send cell to other function 
+% in this function i will walk on every cells in list and send cell to other function
 % " in short this func its work like a for loop  "
 
 walk_on_cells_with_number([]).
@@ -220,15 +213,13 @@ walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
  count_of_nearby_cells(X,Y,Value),
     walk_on_cells_with_number(Tail).
 
-% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "  
+% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
-=======
->>>>>>> Stashed changes
 
 # hamza-end
->>>>>>> 900af995b5979825c98b8113b42063f67aec699f
+
 
 
 get_all_fxd_cells(Sum):-
@@ -240,14 +231,8 @@ calculate_number_of_cells_sea(Sum):-
     solve_cell(I,J,blue),
     all_nearby_cells(I,J,List),
     length(List, Sum),!.
+=======
+>>>>>>> Stashed changes
 
-solved_cell_count(Count) :-
-    findall(_, solve_cell(_,_,_), Cells),
-    length(Cells, Count).
 
-one_sea:-
-    calculate_number_of_cells_sea(Sum1),
-    get_all_fxd_cells(Sum2),
-    solved_cell_count(Sum3),
-    Sum1+Sum2-1 =:= Sum3.
 
