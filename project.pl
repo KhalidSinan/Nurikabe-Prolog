@@ -185,7 +185,9 @@ one_fixed_cell_in_island:-
 
 one_fixed_cell_in_island:- true.
 
-# hamza -start
+
+# hamza - start 
+
 % island_number_equals_size :
 
 % in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
@@ -210,5 +212,32 @@ count_of_nearby_cells(X,Y,Value) :-
 
 # hamza-end
 
+# tima-start
+sum_list_of_value([], 0).
+sum_list_of_value([H|T],Sum):-
+    sum_list_of_value(T,Sum1),
+    Sum is H+Sum1.
 
 
+calculate_number_of_cells_sea(Sum):-
+    solve_cell(I,J,blue),
+    all_nearby_cells(I,J,List),
+    length(List, Sum),!.
+
+solved_cell_count(Count) :-
+    findall(_, solve_cell(_,_,_), Cells),
+    length(Cells, Count).
+
+one_sea:-
+    calculate_number_of_cells_sea(Sum1),
+    get_all_fxd_cells(Sum2),
+    solved_cell_count(Sum3),
+    Sum1+Sum2-1 =:= Sum3.
+# tima_end
+
+
+#func for print :
+grid_size(7,7).
+print_grid():- \+get_row().
+get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
+get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
