@@ -139,19 +139,19 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
 % 3- for each adjacent cell do the following steps:
 %    - check if we have visited it previously using "member" on (Visited).
 %    - if visited => skip the cell.
-%    - if not visited => add the cell to the current result list (Acc)
+%    - if not visited => add the cell to the current result list (Acc) 
 %      and repeat the same algorithm for this cell.
 all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
-    nearby_cells(I,J,Cells),
+    nearby_cells(I,J,Cells), 
     remove_empty_lists(Cells,FilteredCells),
 
     iterate_and_add(FilteredCells, [ (I, J) | Acc], Acc, UpdatedAcc),
     % update the visited list (current visited cell + all the visited cells = new visited list)
-    NewVisited = [ (I, J) | Acc].
+    NewVisited = [ (I, J) | Acc]. 
 
 all_nearby_cells(I, J, AllCells) :-
-    % if the passed cell was fixed cell of number 1,
-    % then the result is the passed cell only.
+    % if the passed cell was fixed cell of number 1, 
+    % then the result is the passed cell only. 
     fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
     all_nearby_cells(I, J, [], [(I, J)], AllCells).
 
@@ -186,15 +186,10 @@ one_fixed_cell_in_island:-
 one_fixed_cell_in_island:- true.
 
 
-
-
-
-sum_list_of_value([], 0).
-sum_list_of_value([H|T],Sum):-
-    sum_list_of_value(T,Sum1),
-    Sum is H+Sum1.
+# hamza - start 
 
 % island_number_equals_size :
+
 % in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
 
 find_cells_with_numbers() :-
@@ -202,7 +197,7 @@ find_cells_with_numbers() :-
      walk_on_cells_with_number(List).
 
 
-% in this function i will walk on every cells in list and send cell to other function
+% in this function i will walk on every cells in list and send cell to other function 
 % " in short this func its work like a for loop  "
 
 walk_on_cells_with_number([]).
@@ -210,16 +205,18 @@ walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
  count_of_nearby_cells(X,Y,Value),
     walk_on_cells_with_number(Tail).
 
-% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
+% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "  
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
 
+# hamza-end
 
-
-get_all_fxd_cells(Sum):-
-    findall(Value,fxd_cell(_,_,Value),ListOfValue),
-    sum_list_of_value(ListOfValue,Sum).
+# tima-start
+sum_list_of_value([], 0).
+sum_list_of_value([H|T],Sum):-
+    sum_list_of_value(T,Sum1),
+    Sum is H+Sum1.
 
 
 calculate_number_of_cells_sea(Sum):-
@@ -236,3 +233,11 @@ one_sea:-
     get_all_fxd_cells(Sum2),
     solved_cell_count(Sum3),
     Sum1+Sum2-1 =:= Sum3.
+# tima_end
+
+
+#func for print :
+grid_size(7,7).
+print_grid():- \+get_row().
+get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
+get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
