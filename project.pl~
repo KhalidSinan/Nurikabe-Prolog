@@ -77,23 +77,9 @@ solve_cell(7,7,green).
 
 
 
-<<<<<<< HEAD
-no_2_by_2_sea(_,7):- !.
-no_2_by_2_sea(7,_):- !.
-=======
-
-%func for print :
-grid_size(7,7).
-print_grid():- \+get_row().
-get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
-get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
->>>>>>> 022db65c9ab4c53d3bb67925f0177d90a6c19b9e
-
-
-
 %Masa
 %in every cell check if you are either in the last colomn or row,
-%   if you are then don't check anything
+%   if you are then dont check anything
 %   else get the color of the cell and beside it, below it and
 %   beside-below
 %   if the four cells are blue then it's false
@@ -237,25 +223,29 @@ count_of_nearby_cells(X,Y,Value) :-
 % hamza-end
 
 % tima-start
+%  A function that collects the element o an array
 sum_list_of_value([], 0).
 sum_list_of_value([H|T],Sum):-
     sum_list_of_value(T,Sum1),
     Sum is H+Sum1.
 
-
+% A function that collect the number of sea cells
 calculate_number_of_cells_sea(Sum):-
     solve_cell(I,J,blue),
     all_nearby_cells(I,J,List),
     length(List, Sum),!.
-
+% A function bring A sum of the fxd_ cell value List
 get_all_fxd_cells(Sum):-
     findall(Value,fxd_cell(_,_,Value),ListOfValue),
     sum_list_of_value(ListOfValue,Sum).
-
+% A function bring the number of solved cell
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
     length(Cells, Count).
-
+% A function bring the first connected sea it finds then counts the
+% number of its cell , then calculate the number of island cells
+% then checks the total of grid if they are equal to the grid number it
+% return true else false
 one_sea:-
     calculate_number_of_cells_sea(Sum1),
     get_all_fxd_cells(Sum2),
@@ -263,4 +253,91 @@ one_sea:-
     Sum1+Sum2-1 =:= Sum3.
 % tima_end
 
+% Part two
 
+grid_size(7,7).
+print_grid():- \+get_row().
+get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
+get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
+
+
+% Add Sea if not added
+assert_sea(I,J):-
+    % Check if solve_cell exists dont add
+    % if doesnt exist add cell
+    % or return true to continue the next statements
+    (\+ solve_cell(I,J,blue) -> asserta(solve_cell(I,J,blue)) ; true).
+
+% Put Sea Around Ones
+put_sea_around_ones :-
+    % Get Fixed Cell that has value of 1
+    fxd_cell(I, J, 1),
+    % get the nearby cells
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    % add sea in nearby cells
+    assert_sea(I,J1),
+    assert_sea(I1,J),
+    assert_sea(I,J2),
+    assert_sea(I2,J),
+    % to backtrack
+    fail.
+put_sea_around_ones:- true.
+
+% To remove cells that are out of board
+remove_cells_out_of_board:-
+    retractall(solve_cell(_, 8, _)),
+    retractall(solve_cell(_, 0, _)),
+    retractall(solve_cell(8, _, _)),
+    retractall(solve_cell(0, _, _)).
+
+% print sea ( I , J )
+get_sea:- solve_cell(I,J,blue), write(I), write(' '), write(J), nl, fail.
+get_sea:- true.
+
+% get Fixed cells in a list
+get_fxd_cells(List):-
+    findall((I,J), fxd_cell(I,J,_), List).
+
+% Put Sea Between Cells Seperated By One
+put_sea_between_cells_seperated_by_one :-
+    % Get Random Fixed Cell
+    fxd_cell(I, J, _),
+    % get the nearby cells
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    % get the cells seperated by one
+    I3 is I - 2,
+    I4 is I + 2,
+    J3 is J - 2,
+    J4 is J + 2,
+    % check if it is fixed then add the cell inbetween
+    (   fxd_cell(I, J3 ,_) -> assert_sea(I,J1) ; true),
+    (   fxd_cell(I3, J ,_) -> assert_sea(I1,J) ; true),
+    (   fxd_cell(I, J4, _) -> assert_sea(I,J2) ; true),
+    (   fxd_cell(I4, J, _) -> assert_sea(I2,J) ; true),
+    % to backtrack
+    fail.
+put_sea_between_cells_seperated_by_one:-   true.
+
+
+nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
+    solve_cell(I, J, Color), % get the cell color.
+    I1 is I - 1,
+    J1 is J - 1,
+    I2 is I - 1,
+    J2 is J + 1,
+    I3 is I +1,
+    J3 is J-1,
+    I4 is I +1,
+    J4 is J+1,
+    % if the adjacent cell have the same color as the specific cell,
+    % add it to the list else add empty list.
+    (solve_cell(I1, J1, Color) -> H1 = (I1, J) ; H1 = []),
+    (solve_cell(I2, J2, Color) -> H2 = (I2, J) ; H2 = []),
+    (solve_cell(I3, J3, Color) -> H3 = (I, J1) ; H3 = []),
+    (solve_cell(I4, J4, Color) -> H4 = (I, J2) ; H4 = []).
