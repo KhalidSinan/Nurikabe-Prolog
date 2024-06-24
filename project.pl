@@ -236,8 +236,8 @@ calculate_number_of_cells_sea(Sum):-
     length(List, Sum),!.
 % A function bring A sum of the fxd_ cell value List
 get_all_fxd_cells(Sum):-
-��� findall(Value,fxd_cell(_,_,Value),ListOfValue),
-��� sum_list_of_value(ListOfValue,Sum).
+     findall(Value,fxd_cell(_,_,Value),ListOfValue),
+     sum_list_of_value(ListOfValue,Sum).
 % A function bring the number of solved cell
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
@@ -385,15 +385,15 @@ is_empty_cell(X, Y) :-
 
 surrounded_square(X,_) :- grid_size(N,_) , X == N , ! .
 
-processing(_,Y):- grid_size(_,M) ,Y == M , ! .
-
 % is func do like a for(loop) on Rows .
 surrounded_square:- X=1 , Y=1 ,
     processing(X,Y),
     X1= X+1,
     surrounded_square(X1,Y).
 
-% is fonc do like afor(loop) on columns and called check for every cell.
+processing(_,Y):- grid_size(_,M) ,Y == M , ! .
+
+% is fonc do like afor(loop) on columns and called check for every cell
 processing(X,Y) :-
         check(X,Y),
         Y1= Y+1,
