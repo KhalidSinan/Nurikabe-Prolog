@@ -77,17 +77,13 @@ solve_cell(7,7,green).
 
 
 
-<<<<<<< HEAD
-no_2_by_2_sea(_,7):- !.
-no_2_by_2_sea(7,_):- !.
-=======
 
 %func for print :
 grid_size(7,7).
 print_grid():- \+get_row().
 get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
 get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
->>>>>>> 022db65c9ab4c53d3bb67925f0177d90a6c19b9e
+
 
 
 
@@ -247,6 +243,10 @@ calculate_number_of_cells_sea(Sum):-
     solve_cell(I,J,blue),
     all_nearby_cells(I,J,List),
     length(List, Sum),!.
+
+get_all_fxd_cells(Sum):-
+    findall(Value,fxd_cell(_,_,Value),ListOfValue),
+    sum_list_of_value(ListOfValue,Sum).
 
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
