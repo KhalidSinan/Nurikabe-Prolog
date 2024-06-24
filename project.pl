@@ -460,3 +460,34 @@ island_continuity :-
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
+
+%SARA 
+%stop when no more cells
+restart:- \+ solve_cell(_, _, _).
+% check if there is a fact exist, retract the fact, recursive call to
+% process the next cell
+restart:-
+    solve_cell(X, Y, Color),
+    retract(solve_cell(X, Y, Color)),
+    restart.
+
+% when a green cell have only two directions to expand, then the
+% diagonal cell will be sea
+expandable_only_in_two_directions(I,J):-
+   %get the adjacent indexes
+   I1 is I - 1,
+   I2 is I + 1,
+   J1 is J - 1,
+   J2 is J + 1,
+   %check if the cell is an island
+   solve_cell(I,J,green),
+   %each condition check if there is two neighbor adjacents filled and the other two adjacents are empty, 
+   %then add a sea in the diagonal cell from the empty cells direction
+   \+solve_cell(I1,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I2,J,_),
+   assert_sea(I1,J1);
+   \+solve_cell(I1,J,_),\+solve_cell(I,J2,_),solve_cell(I,J1,_),solve_cell(I2,J,_),
+   assert_sea(I1,J2);
+   \+solve_cell(I,J2,_),\+solve_cell(I2,J,_),solve_cell(I1,J,_),solve_cell(I,J1,_),
+   assert_sea(I2,J2);
+   \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_),
+   assert_sea(I2,J1).
