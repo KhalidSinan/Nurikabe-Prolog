@@ -253,12 +253,6 @@ one_sea:-
 
 % Part two
 
-grid_size(7,7).
-print_grid():- \+get_row().
-get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
-get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
-
-
 % Add Sea if not added
 assert_sea(I,J):-
     % Check if solve_cell exists dont add
@@ -462,7 +456,19 @@ island_continuity :-
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
 
-%SARA
+%SARA 
+%new print method
+grid_size(7,7).
+print_grid:- \+get_row.
+get_row:- grid_size(N,_) , between(1,N,X),\+get_col(X),nl,nl,fail.
+get_col(X):- grid_size(_,M) , between(1,M,Y),
+    (fxd_cell(X,Y,C) -> write('  '), write(C),write('    ');
+    solve_cell(X,Y,green) -> write('green  ');
+    solve_cell(X,Y,blue) -> write('blue   ');
+    \+solve_cell(X,Y,_), write('  _    ')),
+    fail.
+
+
 %stop when no more cells
 restart:- \+ solve_cell(_, _, _).
 % check if there is a fact exist, retract the fact, recursive call to
@@ -475,29 +481,27 @@ restart:-
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
 expandable_only_in_two_directions(I,J):-
-   %get the adjacent indexes
    I1 is I - 1,
    I2 is I + 1,
    J1 is J - 1,
    J2 is J + 1,
    %check if the cell is an island
    solve_cell(I,J,green),
-   %each condition check if there is two neighbor adjacents filled and the other two adjacents are empty,
-   %then add a sea in the diagonal cell from the empty cells direction
-   \+solve_cell(I1,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I2,J,_),
-   assert_sea(I1,J1);
-   \+solve_cell(I1,J,_),\+solve_cell(I,J2,_),solve_cell(I,J1,_),solve_cell(I2,J,_),
-   assert_sea(I1,J2);
-   \+solve_cell(I,J2,_),\+solve_cell(I2,J,_),solve_cell(I1,J,_),solve_cell(I,J1,_),
-   assert_sea(I2,J2);
-   \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_),
-   assert_sea(I2,J1).
-
-
-
-
-
-
+    %two cases: if the cell is fixed with 2 value, use "diagonal_cell_is_sea" directly, if its not
+   %make sure that the island of this cell needs one more cell to complete, then use "diagonal_cell_is_sea" 
+  (fxd_cell(I,J,2)-> diagonal_cell_is_sea(I,J,I1,I2,J1,J2) ; all_nearby_cells(I,J,Result),
+   member((X,Y),Result),
+   fxd_cell(X,Y,Value),
+   length(Result, Length),
+   Length =:= Value - 1 -> diagonal_cell_is_sea(I,J,I1,I2,J1,J2)).
+%this function check if there is two neighbor adjacents filled and the other two adjacents are empty, 
+%then add a sea in the diagonal cell from the empty cells direction
+diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
+    (\+solve_cell(I1,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I2,J,_)-> assert_sea(I1,J1);
+   \+solve_cell(I1,J,_),\+solve_cell(I,J2,_),solve_cell(I,J1,_),solve_cell(I2,J,_)-> assert_sea(I1,J2);
+   \+solve_cell(I,J2,_),\+solve_cell(I2,J,_),solve_cell(I1,J,_),solve_cell(I,J1,_)-> assert_sea(I2,J2);
+   \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
+   print_grid.
 
 
 % startegy 4 is : if a cell was surrounded by three sea , the fourth
@@ -547,15 +551,4 @@ begin_strategy_4(I,J):-
 
 strategy_4:-
     begin_strategy_4(1,1).
-
-
-
-
-
-
-
-
-
-
-
 
