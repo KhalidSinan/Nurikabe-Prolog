@@ -17,6 +17,7 @@ fxd_cell(7,7,6).
 
 
 % solve_cell()
+:- dynamic solve_cell/3.
 solve_cell(1,1,'blue').
 solve_cell(1,2,'green').
 solve_cell(1,3,'green').
@@ -456,7 +457,7 @@ island_continuity :-
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
 
-%SARA 
+%SARA
 %new print method
 grid_size(7,7).
 print_grid:- \+get_row.
@@ -488,13 +489,13 @@ expandable_only_in_two_directions(I,J):-
    %check if the cell is an island
    solve_cell(I,J,green),
     %two cases: if the cell is fixed with 2 value, use "diagonal_cell_is_sea" directly, if its not
-   %make sure that the island of this cell needs one more cell to complete, then use "diagonal_cell_is_sea" 
+   %make sure that the island of this cell needs one more cell to complete, then use "diagonal_cell_is_sea"
   (fxd_cell(I,J,2)-> diagonal_cell_is_sea(I,J,I1,I2,J1,J2) ; all_nearby_cells(I,J,Result),
    member((X,Y),Result),
    fxd_cell(X,Y,Value),
    length(Result, Length),
    Length =:= Value - 1 -> diagonal_cell_is_sea(I,J,I1,I2,J1,J2)).
-%this function check if there is two neighbor adjacents filled and the other two adjacents are empty, 
+%this function check if there is two neighbor adjacents filled and the other two adjacents are empty,
 %then add a sea in the diagonal cell from the empty cells direction
 diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
     (\+solve_cell(I1,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I2,J,_)-> assert_sea(I1,J1);
@@ -552,3 +553,49 @@ begin_strategy_4(I,J):-
 strategy_4:-
     begin_strategy_4(1,1).
 
+% Wall Continuity (Tima)
+
+
+return_cell_from_nearby_can_become_sea(List, (X,Y)) :-
+    member((X,Y), List),
+    (  \+ solve_cell(X,Y,_) , !).
+return_cell_from_nearby_can_become_sea(_, (-1, -1)).
+
+nearby_of_list_of_neighBors_helper(I, J, [H1, H2, H3, H4]) :-
+    solve_cell(I, J, _), % get the cell color.
+    grid_size(N,M),
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    % if the adjacent cell have the same color as the specific cell,
+    % add it to the list else add empty list.
+    (I1>0,\+solve_cell(I1, J, _)-> H1 = (I1, J) ; H1 = []),
+    (I2=<N,\+solve_cell(I2, J, _)-> H2 = (I2, J) ; H2 = []),
+    (J1>0,\+solve_cell(I, J1, _) -> H3 = (I, J1) ; H3 = []),
+    (J2=<M,\+solve_cell(I, J2, _) -> H4 = (I, J2) ; H4 = []).
+
+nearby_of_list_of_neighBors([], _).
+nearby_of_list_of_neighBors([(I,J)|T], S):-
+    nearby_of_list_of_neighBors_helper(I,J,L),
+    remove_empty_lists(L,List),
+    return_cell_from_nearby_can_become_sea(List,S),
+    (S \= (-1, -1), ! ; nearby_of_list_of_neighBors(T,S)).
+
+
+give_cell_should_become_sea([(I,J)|T], S):-
+    nearby_neighbors_cells(I,J,List),
+    remove_empty_lists(List,List2),
+    nearby_of_list_of_neighBors(List2,S),
+    (S \= (-1, -1), ! ; give_cell_should_become_sea(T,S)).
+give_cell_should_become_sea(_, (-1, -1)).
+
+wall_continuity_helper((I,J)):- assert_sea(I,J).
+
+wall_continuity:-
+    solve_cell(I,J,blue),
+    all_nearby_cells(I,J,List),
+    give_cell_should_become_sea(List,S),
+    (S \= (-1, -1) ->
+        wall_continuity_helper(S)).
+wall_continuity:-true.
