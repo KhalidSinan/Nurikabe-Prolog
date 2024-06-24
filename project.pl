@@ -376,7 +376,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
 % Diagonally adjacent clues - end (hamza) .
 
 
-% Surrounded square - start (hamza) : 
+% Surrounded square - start (hamza) :
 
  % check if the cell is not solved_cell and not fxd_cell .
 is_empty_cell(X, Y) :-
@@ -386,7 +386,7 @@ is_empty_cell(X, Y) :-
 surrounded_square(X,_) :- grid_size(N,_) , X == N , ! .
 
 processing(_,Y):- grid_size(_,M) ,Y == M , ! .
- 
+
 % is func do like a for(loop) on Rows .
 surrounded_square:- X=1 , Y=1 ,
     processing(X,Y),
@@ -414,3 +414,49 @@ check(X,Y):-
     -> asserta(solve_cell(X,Y,'blue')) ; true .
 
  % Surrounded square - end (hamza) .
+
+
+% Assert Land without duplicates
+assert_land(I,J):-
+    % Check if solve_cell exists dont add
+    % if doesnt exist add cell
+    % or return true to continue the next statements
+    (\+ solve_cell(I,J,green) -> asserta(solve_cell(I,J,green)) ; true).
+
+
+% get a cell that is green and isnt connected to any island
+get_alone_cell(I,J):-
+    solve_cell(I,J, green),
+    \+ fxd_cell(I,J,_),
+    all_nearby_cells(I,J, List),
+    length(List, Length),
+    Length =:= 0.
+
+% get fixed island value of this island
+ get_fxd_island_value(I, J, Value, Length):-
+    all_nearby_cells(I,J,List),
+    member((X,Y), List),
+    fxd_cell(X, Y, Value),
+    length(List, Length).
+
+% Island Continuity
+island_continuity_helper(I,J):-
+    get_fxd_island_value(I, J, Value, Length),
+    Value > Length.
+
+island_continuity :-
+    get_alone_cell(I,J),
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    % get the cells seperated by one
+    I3 is I - 2,
+    I4 is I + 2,
+    J3 is J - 2,
+    J4 is J + 2,
+    % check if it is fixed then add the cell inbetween
+    (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
+    (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
+    (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
+    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
