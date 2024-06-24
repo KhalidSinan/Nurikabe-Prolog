@@ -19,7 +19,7 @@ fxd_cell(7,7,6).
 
 % solve_cell()
 solve_cell(1,1,blue).
-solve_cell(1,2,blue).
+solve_cell(1,2,green).
 solve_cell(1,3,green).
 solve_cell(1,4,green).
 solve_cell(1,5,blue).
@@ -114,10 +114,8 @@ no2by2sea(I, J):-
     no2by2sea(I1,J),
     no2by2sea(I,J1)
     .
-
 no_2_by_2_sea:-
     no2by2sea(1,1).
-
 
 
 % get the adjacent cells for specific cell.
@@ -254,5 +252,157 @@ one_sea:-
     solved_cell_count(Sum3),
     Sum1+Sum2-1 =:= Sum3.
 % tima_end
+
+
+
+
+% startegy 4 is : if a cell was surrounded by three sea , the fourth
+% will be land
+return_color(I,J,E):-
+   grid_size(N,M),
+   (I > N ; J > M ; I < 1; J < 1),
+   E = blue,
+   !.
+return_color(I,J,E):-
+    solve_cell(I,J,E).
+cnt_blue(C,R):-
+    C == blue,
+    R = 1,
+    !.
+cnt_blue(_,R):-
+    R = 0.
+round_blue(I,J,Total):-
+    I1 is I + 1,
+    I2 is I - 1,
+    J1 is J + 1,
+    J2 is J - 1,
+    return_color(I1,J,C1),
+    return_color(I2,J,C2),
+    return_color(I,J1,C3),
+    return_color(I,J2,C4),
+    cnt_blue(C1,R1),
+    cnt_blue(C2,R2),
+    cnt_blue(C3,R3),
+    cnt_blue(C4,R4),
+    R5 is R1 + R2,
+    R6 is R3+R4,
+    Total is R5+R6.
+strategy4(I,J):-
+    round_blue(I,J,Total),
+    Total == 3,
+    I1 is I + 1,
+    I2 is I - 1,
+    J1 is J + 1,
+    J2 is J - 1,
+    (solve_cell(I1,J,Co),Co == blue);
+    (solve_cell(I2,J,Co),Co == blue);
+    (solve_cell(I,J1,Co),Co == blue);
+    (solve_cell(I,J2,Co),Co == blue).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
