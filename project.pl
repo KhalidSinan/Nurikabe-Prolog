@@ -17,65 +17,77 @@ fxd_cell(7,7,6).
 
 
 % solve_cell()
-solve_cell(1,1,blue).
+% solve_cell(1,1,blue).
+% solve_cell(1,2,green).
+% solve_cell(1,3,green).
+% solve_cell(1,4,green).
+% solve_cell(1,5,blue).
+% solve_cell(1,6,green).
+% solve_cell(1,7,blue).
+% 
+% 
+% solve_cell(2,1,blue).
+% solve_cell(2,2,blue).
+% solve_cell(2,3,blue).
+% solve_cell(2,4,blue).
+% solve_cell(2,5,blue).
+% solve_cell(2,6,blue).
+% solve_cell(2,7,blue).
+% 
+% solve_cell(3,1,green).
+% solve_cell(3,2,green).
+% solve_cell(3,3,blue). # 3,3,blue
+% solve_cell(3,4,green).
+% solve_cell(3,5,blue). # 3,5,blue
+% solve_cell(3,6,green).
+% solve_cell(3,7,green).
+% 
+% 
+% solve_cell(4,1,blue).
+% solve_cell(4,2,blue).
+% solve_cell(4,3,blue).
+% solve_cell(4,4,blue).
+% solve_cell(4,5,blue).
+% solve_cell(4,6,blue).
+% solve_cell(4,7,green).
+% 
+% solve_cell(5,1,blue).
+% solve_cell(5,2,green).
+% solve_cell(5,3,blue).
+% solve_cell(5,4,green). # 5,4,blue
+% solve_cell(5,5,green).
+% solve_cell(5,6,blue).
+% solve_cell(5,7,green).
+% 
+% solve_cell(6,1,blue).
+% solve_cell(6,2,blue).
+% solve_cell(6,3,green).
+% solve_cell(6,4,blue).
+% solve_cell(6,5,blue).
+% solve_cell(6,6,blue).
+% solve_cell(6,7,green).
+% 
+% solve_cell(7,1,green).
+% solve_cell(7,2,blue).
+% solve_cell(7,3,green). # 7,3,blue
+% solve_cell(7,4,blue).
+% solve_cell(7,5,green).
+% solve_cell(7,6,blue).
+% solve_cell(7,7,green).
+
+:- dynamic solve_cell/3.
 solve_cell(1,2,green).
-solve_cell(1,3,green).
-solve_cell(1,4,green).
-solve_cell(1,5,blue).
 solve_cell(1,6,green).
-solve_cell(1,7,blue).
-
-
-solve_cell(2,1,blue).
-solve_cell(2,2,blue).
-solve_cell(2,3,blue).
-solve_cell(2,4,blue).
-solve_cell(2,5,blue).
-solve_cell(2,6,blue).
-solve_cell(2,7,blue).
-
 solve_cell(3,1,green).
-solve_cell(3,2,green).
-solve_cell(3,3,blue).
 solve_cell(3,4,green).
-solve_cell(3,5,blue).
-solve_cell(3,6,green).
-solve_cell(3,7,green).
-
-
-solve_cell(4,1,blue).
-solve_cell(4,2,blue).
-solve_cell(4,3,blue).
-solve_cell(4,4,blue).
-solve_cell(4,5,blue).
-solve_cell(4,6,blue).
-solve_cell(4,7,green).
-
-solve_cell(5,1,blue).
 solve_cell(5,2,green).
-solve_cell(5,3,blue).
-solve_cell(5,4,green).
 solve_cell(5,5,green).
-solve_cell(5,6,blue).
-solve_cell(5,7,green).
-
-solve_cell(6,1,blue).
-solve_cell(6,2,blue).
 solve_cell(6,3,green).
-solve_cell(6,4,blue).
-solve_cell(6,5,blue).
-solve_cell(6,6,blue).
-solve_cell(6,7,green).
-
 solve_cell(7,1,green).
-solve_cell(7,2,blue).
-solve_cell(7,3,green).
-solve_cell(7,4,blue).
 solve_cell(7,5,green).
-solve_cell(7,6,blue).
 solve_cell(7,7,green).
-
-
+solve_cell(7,6,blue).
+solve_cell(1,7,blue).
 
 
 %func for print :
@@ -89,11 +101,11 @@ get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,
 
 %Masa
 %in every cell check if you are either in the last colomn or row,
-%   if you are then don't check anything
+%   if you are then dont check anything
 %   else get the color of the cell and beside it, below it and
 %   beside-below
-%   if the four cells are blue then it's false
-%   otherwise it's all true
+%   if the four cells are blue then its false
+%   otherwise its all true
 no2by2sea(I,_):-
     grid_size(N,_),
     I==N,!.
@@ -133,6 +145,18 @@ nearby_cells(I, J, [H1, H2, H3, H4]) :-
     (solve_cell(I2, J, Color) -> H2 = (I2, J) ; H2 = []),
     (solve_cell(I, J1, Color) -> H3 = (I, J1) ; H3 = []),
     (solve_cell(I, J2, Color) -> H4 = (I, J2) ; H4 = []).
+
+nearby_empty_cells(I, J, Row, Col, [H1 , H2 , H3 , H4]) :-
+I1 is I - 1,
+I2 is I + 1,
+J1 is J - 1,
+J2 is J + 1,
+% if the adjacent cell have the same color as the specific cell,
+% add it to the list else add empty list.
+(I1 > 0, I1 =< Row, \+solve_cell(I1, J, _) -> H1 = (I1, J) ; H1 = [] ),
+(I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) -> H2 = (I2, J) ; H2 = [] ),
+(J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) -> H3 = (I, J1) ; H3 = [] ),
+(J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) -> H4 = (I, J2) ; H4 = [] ).
 
 remove_empty_lists([], []).
 remove_empty_lists([H|T], [H|Result]) :-
@@ -245,8 +269,8 @@ calculate_number_of_cells_sea(Sum):-
     length(List, Sum),!.
 
 get_all_fxd_cells(Sum):-
-    findall(Value,fxd_cell(_,_,Value),ListOfValue),
-    sum_list_of_value(ListOfValue,Sum).
+    findall(Value,fxd_cell(_,_,Value),ListOfValue),
+    sum_list_of_value(ListOfValue,Sum).
 
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
@@ -258,5 +282,44 @@ one_sea:-
     solved_cell_count(Sum3),
     Sum1+Sum2-1 =:= Sum3.
 % tima_end
+
+% sea-expansion
+
+
+% sea expansion algorithm:
+% - loop through every sea cell
+% - get nearby cells of current sea cell and filter them
+% - if not empty skip this cell 
+%   because the sea cell is already connected to another sea cell
+% - if empty get nearby empty cells and filter them
+% - if length equal 1 make it sea
+% - if not skip
+
+expand_sea([(I1,J1) |_]):-
+    assert(solve_cell(I1,J1,blue)).
+
+:- dynamic sea_expansion/0.
+
+sea_expansion.
+sea_expansion :-
+    findall((I,J), solve_cell(I,J,blue),List),
+    sea_expansion_helper(List),!. 
+
+
+sea_expansion_helper([]).
+sea_expansion_helper([(I,J) | T]) :-
+    nearby_cells(I,J,Cells),
+    remove_empty_lists(Cells,FilteredCells),
+    (FilteredCells == [] -> (
+    nearby_empty_cells(I,J,7,7,EmptyCells), 
+    remove_empty_lists(EmptyCells,FilteredEmptyCells),
+    length(FilteredEmptyCells, N), 
+    (N == 1 -> 
+    expand_sea(FilteredEmptyCells)
+    ; sea_expansion_helper(T))
+    ) 
+    ; sea_expansion_helper(T)). 
+
+
 
 
