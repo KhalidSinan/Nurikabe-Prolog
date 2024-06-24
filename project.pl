@@ -76,6 +76,7 @@ solve_cell(7,6,blue).
 solve_cell(7,7,green).
 
 
+
 no_2_by_2_sea(_,7):- !.
 no_2_by_2_sea(7,_):- !.
 
@@ -192,10 +193,8 @@ sum_list_of_value([], 0).
 sum_list_of_value([H|T],Sum):-
     sum_list_of_value(T,Sum1),
     Sum is H+Sum1.
-=======
-# hamza -start
-% island_number_equals_size :
 
+% island_number_equals_size :
 % in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
 
 find_cells_with_numbers() :-
@@ -215,8 +214,6 @@ walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
-
-# hamza-end
 
 
 
@@ -239,4 +236,3 @@ one_sea:-
     get_all_fxd_cells(Sum2),
     solved_cell_count(Sum3),
     Sum1+Sum2-1 =:= Sum3.
-

@@ -1,3 +1,4 @@
+
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
 fxd_cell(1,6,1).
@@ -18,7 +19,7 @@ fxd_cell(7,7,6).
 
 % solve_cell()
 solve_cell(1,1,blue).
-solve_cell(1,2,green).
+solve_cell(1,2,greem).
 solve_cell(1,3,green).
 solve_cell(1,4,green).
 solve_cell(1,5,blue).
@@ -184,7 +185,7 @@ one_fixed_cell_in_island:-
 
 one_fixed_cell_in_island:- true.
 
-<<<<<<< HEAD
+
 
 
 
@@ -192,10 +193,8 @@ sum_list_of_value([], 0).
 sum_list_of_value([H|T],Sum):-
     sum_list_of_value(T,Sum1),
     Sum is H+Sum1.
-=======
-# hamza -start
-% island_number_equals_size :
 
+% island_number_equals_size :
 % in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
 
 find_cells_with_numbers() :-
@@ -203,7 +202,7 @@ find_cells_with_numbers() :-
      walk_on_cells_with_number(List).
 
 
-% in this function i will walk on every cells in list and send cell to other function 
+% in this function i will walk on every cells in list and send cell to other function
 % " in short this func its work like a for loop  "
 
 walk_on_cells_with_number([]).
@@ -211,13 +210,11 @@ walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
  count_of_nearby_cells(X,Y,Value),
     walk_on_cells_with_number(Tail).
 
-% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "  
+% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
 
-# hamza-end
->>>>>>> 900af995b5979825c98b8113b42063f67aec699f
 
 
 get_all_fxd_cells(Sum):-
@@ -239,4 +236,3 @@ one_sea:-
     get_all_fxd_cells(Sum2),
     solved_cell_count(Sum3),
     Sum1+Sum2-1 =:= Sum3.
-
