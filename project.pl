@@ -236,8 +236,8 @@ calculate_number_of_cells_sea(Sum):-
     length(List, Sum),!.
 % A function bring A sum of the fxd_ cell value List
 get_all_fxd_cells(Sum):-
-    findall(Value,fxd_cell(_,_,Value),ListOfValue),
-    sum_list_of_value(ListOfValue,Sum).
+ï¿½ï¿½ï¿½ findall(Value,fxd_cell(_,_,Value),ListOfValue),
+ï¿½ï¿½ï¿½ sum_list_of_value(ListOfValue,Sum).
 % A function bring the number of solved cell
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
@@ -341,3 +341,76 @@ nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
     (solve_cell(I2, J2, Color) -> H2 = (I2, J2) ; H2 = []),
     (solve_cell(I3, J3, Color) -> H3 = (I3, J3) ; H3 = []),
     (solve_cell(I4, J4, Color) -> H4 = (I4, J4) ; H4 = []).
+
+% Diagonally adjacent clues - start (hamza) :
+
+% in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function .
+find_cells_with_number() :-
+    findall((X,Y,Value), fxd_cell(X,Y,Value), List),
+    walk_on_cells(List).
+
+% in this function i will walk on every cells in list and send cell to other function
+% " in short this func its work like a for loop  " .
+walk_on_cells([]).
+walk_on_cells([(X,Y,_)|Tail]) :-
+    mark_adjacent_cell(X, Y, 1, 1), % Check Right-Down
+    mark_adjacent_cell(X, Y, -1, 1), % Check Left-Down
+    mark_adjacent_cell(X, Y, -1, -1), % Check Left-Up
+    mark_adjacent_cell(X, Y, 1, -1), % Check Right-Up
+    print_grid(),
+    walk_on_cells(Tail).
+
+
+% in this func i will test if the Diagonalcells fxd_cell i will assert
+%  diagonalCell of solved_cell(blue) to this cells .
+mark_adjacent_cell(X, Y, DX, DY) :-
+    X1 is X + DX,
+    Y1 is Y + DY,
+    (fxd_cell(X1, Y1, _) ->
+        (retractall(solve_cell(X, Y1, _)),
+         asserta(solve_cell(X, Y1, 'blue')),
+         retractall(solve_cell(X1, Y, _)),
+         asserta(solve_cell(X1, Y, 'blue')))
+    ; true). % Do nothing if the adjacent cell is not fixed .
+
+% Diagonally adjacent clues - end (hamza) .
+
+
+% Surrounded square - start (hamza) : 
+
+ % check if the cell is not solved_cell and not fxd_cell .
+is_empty_cell(X, Y) :-
+    \+ solve_cell(X, Y,_),
+    \+ fxd_cell(X, Y, _).
+
+surrounded_square(X,_) :- grid_size(N,_) , X == N , ! .
+
+processing(_,Y):- grid_size(_,M) ,Y == M , ! .
+ 
+% is func do like a for(loop) on Rows .
+surrounded_square:- X=1 , Y=1 ,
+    processing(X,Y),
+    X1= X+1,
+    surrounded_square(X1,Y).
+
+% is fonc do like afor(loop) on columns and called check for every cell.
+processing(X,Y) :-
+        check(X,Y),
+        Y1= Y+1,
+        processing(X,Y1).
+
+% if the cell is empty and is surrounded by sea horizontally and
+% vertically I will assert this cell as solve_cell(blue) .
+check(X,Y):-
+    (   is_empty_cell(X,Y),
+        X1 is X - 1,
+        solve_cell(X1,Y,b),
+        Y2 is Y + 1 ,
+        solve_cell(X,Y2,b),
+        Y1 is Y - 1 ,
+        solve_cell(X,Y1,b),
+        X2 is X + 1,
+        solve_cell(X2,Y,b) )
+    -> asserta(solve_cell(X,Y,'blue')) ; true .
+
+ % Surrounded square - end (hamza) .
