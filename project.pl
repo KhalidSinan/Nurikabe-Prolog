@@ -77,16 +77,6 @@ solve_cell(7,7,green).
 
 
 
-
-%func for print :
-grid_size(7,7).
-print_grid():- \+get_row().
-get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
-get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
-
-
-
-
 %Masa
 %in every cell check if you are either in the last colomn or row,
 %   if you are then dont check anything
@@ -335,3 +325,19 @@ put_sea_between_cells_seperated_by_one :-
 put_sea_between_cells_seperated_by_one:-   true.
 
 
+nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
+    solve_cell(I, J, Color), % get the cell color.
+    I1 is I - 1,
+    J1 is J - 1,
+    I2 is I - 1,
+    J2 is J + 1,
+    I3 is I +1,
+    J3 is J-1,
+    I4 is I +1,
+    J4 is J+1,
+    % if the adjacent cell have the same color as the specific cell,
+    % add it to the list else add empty list.
+    (solve_cell(I1, J1, Color) -> H1 = (I1, J1) ; H1 = []),
+    (solve_cell(I2, J2, Color) -> H2 = (I2, J2) ; H2 = []),
+    (solve_cell(I3, J3, Color) -> H3 = (I3, J3) ; H3 = []),
+    (solve_cell(I4, J4, Color) -> H4 = (I4, J4) ; H4 = []).
