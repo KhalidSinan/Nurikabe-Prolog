@@ -17,63 +17,63 @@ fxd_cell(7,7,6).
 
 
 % solve_cell()
-solve_cell(1,1,blue).
-solve_cell(1,2,green).
-solve_cell(1,3,green).
-solve_cell(1,4,green).
-solve_cell(1,5,blue).
-solve_cell(1,6,green).
-solve_cell(1,7,blue).
+solve_cell(1,1,'blue').
+solve_cell(1,2,'green').
+solve_cell(1,3,'green').
+solve_cell(1,4,'green').
+solve_cell(1,5,'blue').
+solve_cell(1,6,'green').
+solve_cell(1,7,'blue').
 
 
-solve_cell(2,1,blue).
-solve_cell(2,2,blue).
-solve_cell(2,3,blue).
-solve_cell(2,4,blue).
-solve_cell(2,5,blue).
-solve_cell(2,6,blue).
-solve_cell(2,7,blue).
+solve_cell(2,1,'blue').
+solve_cell(2,2,'blue').
+solve_cell(2,3,'blue').
+solve_cell(2,4,'blue').
+solve_cell(2,5,'blue').
+solve_cell(2,6,'blue').
+solve_cell(2,7,'blue').
 
-solve_cell(3,1,green).
-solve_cell(3,2,green).
-solve_cell(3,3,blue).
-solve_cell(3,4,green).
-solve_cell(3,5,blue).
-solve_cell(3,6,green).
-solve_cell(3,7,green).
+solve_cell(3,1,'green').
+solve_cell(3,2,'green').
+solve_cell(3,3,'blue').
+solve_cell(3,4,'green').
+solve_cell(3,5,'blue').
+solve_cell(3,6,'green').
+solve_cell(3,7,'green').
 
 
-solve_cell(4,1,blue).
-solve_cell(4,2,blue).
-solve_cell(4,3,blue).
-solve_cell(4,4,blue).
-solve_cell(4,5,blue).
-solve_cell(4,6,blue).
-solve_cell(4,7,green).
+solve_cell(4,1,'blue').
+solve_cell(4,2,'blue').
+solve_cell(4,3,'blue').
+solve_cell(4,4,'blue').
+solve_cell(4,5,'blue').
+solve_cell(4,6,'blue').
+solve_cell(4,7,'green').
 
-solve_cell(5,1,blue).
-solve_cell(5,2,green).
-solve_cell(5,3,blue).
-solve_cell(5,4,green).
-solve_cell(5,5,green).
-solve_cell(5,6,blue).
-solve_cell(5,7,green).
+solve_cell(5,1,'blue').
+solve_cell(5,2,'green').
+solve_cell(5,3,'blue').
+solve_cell(5,4,'green').
+solve_cell(5,5,'green').
+solve_cell(5,6,'blue').
+solve_cell(5,7,'green').
 
-solve_cell(6,1,blue).
-solve_cell(6,2,blue).
-solve_cell(6,3,green).
-solve_cell(6,4,blue).
-solve_cell(6,5,blue).
-solve_cell(6,6,blue).
-solve_cell(6,7,green).
+solve_cell(6,1,'blue').
+solve_cell(6,2,'blue').
+solve_cell(6,3,'green').
+solve_cell(6,4,'blue').
+solve_cell(6,5,'blue').
+solve_cell(6,6,'blue').
+solve_cell(6,7,'green').
 
-solve_cell(7,1,green).
-solve_cell(7,2,blue).
-solve_cell(7,3,green).
-solve_cell(7,4,blue).
-solve_cell(7,5,green).
-solve_cell(7,6,blue).
-solve_cell(7,7,green).
+solve_cell(7,1,'green').
+solve_cell(7,2,'blue').
+solve_cell(7,3,'green').
+solve_cell(7,4,'blue').
+solve_cell(7,5,'green').
+solve_cell(7,6,'blue').
+solve_cell(7,7,'green').
 
 
 
@@ -100,14 +100,12 @@ no2by2sea(I, J):-
     solve_cell(I1, J1, Num4),
 %    format('Checking cells: (~w,~w,~w, ~w, ~w, ~w)~n', [I, J, Num,
 %    Num2, Num3, Num4]),
-    \+ (Num == blue, Num2 == blue, Num3 == blue, Num4 == blue),
+    \+ (Num == 'blue', Num2 == 'blue', Num3 == 'blue', Num4 == 'blue'),
     no2by2sea(I1,J),
     no2by2sea(I,J1)
     .
-
 no_2_by_2_sea:-
     no2by2sea(1,1).
-
 
 
 % get the adjacent cells for specific cell.
@@ -255,18 +253,12 @@ one_sea:-
 
 % Part two
 
-grid_size(7,7).
-print_grid():- \+get_row().
-get_row():- grid_size(N,_) , between(1,N,X) ,\+get_col(X),nl,nl,fail.
-get_col(X):- grid_size(_,M) , between(1,M,Y) ,( fxd_cell(X,Y,C) -> fxd_cell(X,Y,C) ; solve_cell(X,Y,C)) , write(C),write(' ') , fail.
-
-
 % Add Sea if not added
 assert_sea(I,J):-
     % Check if solve_cell exists dont add
     % if doesnt exist add cell
     % or return true to continue the next statements
-    (\+ solve_cell(I,J,blue) -> asserta(solve_cell(I,J,blue)) ; true).
+    (\+ solve_cell(I,J,'blue') -> asserta(solve_cell(I,J,'blue')) ; true).
 
 % Put Sea Around Ones
 put_sea_around_ones :-
@@ -288,9 +280,12 @@ put_sea_around_ones:- true.
 
 % To remove cells that are out of board
 remove_cells_out_of_board:-
-    retractall(solve_cell(_, 8, _)),
+    grid_size(N,M),
+    N1 is N + 1,
+    M1 is M + 1,
+    retractall(solve_cell(_, M1, _)),
     retractall(solve_cell(_, 0, _)),
-    retractall(solve_cell(8, _, _)),
+    retractall(solve_cell(N1, _, _)),
     retractall(solve_cell(0, _, _)).
 
 % print sea ( I , J )
@@ -421,12 +416,12 @@ assert_land(I,J):-
     % Check if solve_cell exists dont add
     % if doesnt exist add cell
     % or return true to continue the next statements
-    (\+ solve_cell(I,J,green) -> asserta(solve_cell(I,J,green)) ; true).
+    (\+ solve_cell(I,J,'green') -> asserta(solve_cell(I,J,'green')) ; true).
 
 
 % get a cell that is green and isnt connected to any island
 get_alone_cell(I,J):-
-    solve_cell(I,J, green),
+    solve_cell(I,J, 'green'),
     \+ fxd_cell(I,J,_),
     all_nearby_cells(I,J, List),
     length(List, Length),
@@ -460,3 +455,100 @@ island_continuity :-
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
+
+%SARA 
+%new print method
+grid_size(7,7).
+print_grid:- \+get_row.
+get_row:- grid_size(N,_) , between(1,N,X),\+get_col(X),nl,nl,fail.
+get_col(X):- grid_size(_,M) , between(1,M,Y),
+    (fxd_cell(X,Y,C) -> write('  '), write(C),write('    ');
+    solve_cell(X,Y,green) -> write('green  ');
+    solve_cell(X,Y,blue) -> write('blue   ');
+    \+solve_cell(X,Y,_), write('  _    ')),
+    fail.
+
+
+%stop when no more cells
+restart:- \+ solve_cell(_, _, _).
+% check if there is a fact exist, retract the fact, recursive call to
+% process the next cell
+restart:-
+    solve_cell(X, Y, Color),
+    retract(solve_cell(X, Y, Color)),
+    restart.
+
+% when a green cell have only two directions to expand, then the
+% diagonal cell will be sea
+expandable_only_in_two_directions(I,J):-
+   I1 is I - 1,
+   I2 is I + 1,
+   J1 is J - 1,
+   J2 is J + 1,
+   %check if the cell is an island
+   solve_cell(I,J,green),
+    %two cases: if the cell is fixed with 2 value, use "diagonal_cell_is_sea" directly, if its not
+   %make sure that the island of this cell needs one more cell to complete, then use "diagonal_cell_is_sea" 
+  (fxd_cell(I,J,2)-> diagonal_cell_is_sea(I,J,I1,I2,J1,J2) ; all_nearby_cells(I,J,Result),
+   member((X,Y),Result),
+   fxd_cell(X,Y,Value),
+   length(Result, Length),
+   Length =:= Value - 1 -> diagonal_cell_is_sea(I,J,I1,I2,J1,J2)).
+%this function check if there is two neighbor adjacents filled and the other two adjacents are empty, 
+%then add a sea in the diagonal cell from the empty cells direction
+diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
+    (\+solve_cell(I1,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I2,J,_)-> assert_sea(I1,J1);
+   \+solve_cell(I1,J,_),\+solve_cell(I,J2,_),solve_cell(I,J1,_),solve_cell(I2,J,_)-> assert_sea(I1,J2);
+   \+solve_cell(I,J2,_),\+solve_cell(I2,J,_),solve_cell(I1,J,_),solve_cell(I,J1,_)-> assert_sea(I2,J2);
+   \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
+   print_grid.
+
+
+% startegy 4 is : if a cell was surrounded by three sea , the fourth
+% will be land
+return_color(I,J,E):-
+   grid_size(N,M),
+   (I > N ; J > M ; I < 1; J < 1),
+   E = 'blue',
+   !.
+return_color(I,J,E):-
+    solve_cell(I,J,E).
+cnt_blue(C,R):-
+    C == 'blue',
+    R = 1,
+    !.
+cnt_blue(_,R):-
+    R = 0.
+round_blue(I,J,Total):-
+    I1 is I + 1,
+    I2 is I - 1,
+    J1 is J + 1,
+    J2 is J - 1,
+    return_color(I1,J,C1),
+    return_color(I2,J,C2),
+    return_color(I,J1,C3),
+    return_color(I,J2,C4),
+    cnt_blue(C1,R1),
+    cnt_blue(C2,R2),
+    cnt_blue(C3,R3),
+    cnt_blue(C4,R4),
+    R5 is R1 + R2,
+    R6 is R3+R4,
+    Total is R5+R6.
+begin_strategy_4(I,J):-
+    round_blue(I,J,Total),
+    Total == 3,
+    I1 is I + 1,
+    I2 is I - 1,
+    J1 is J + 1,
+    J2 is J - 1,
+    (return_color(I1,J,Co),Co \= 'blue' , assert_land(solve_cell(I1,J)));
+    (return_color(I2,J,Co),Co \= 'blue' , assert_land(solve_cell(I2,J)));
+    (return_color(I,J1,Co),Co \= 'blue' , assert_land(solve_cell(I,J1)));
+    (return_color(I,J2,Co),Co \= 'blue' , assert_land(solve_cell(I1,J)));
+    begin_strategy_4(I1,J),
+    begin_strategy_4(I,J1).
+
+strategy_4:-
+    begin_strategy_4(1,1).
+
