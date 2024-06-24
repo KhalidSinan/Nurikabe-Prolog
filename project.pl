@@ -1,4 +1,3 @@
-
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
 fxd_cell(1,6,1).
@@ -75,6 +74,7 @@ solve_cell(7,4,blue).
 solve_cell(7,5,green).
 solve_cell(7,6,blue).
 solve_cell(7,7,green).
+
 
 
 no_2_by_2_sea(_,7):- !.
