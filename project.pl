@@ -282,7 +282,7 @@ one_sea:-
 % - if not skip
 
 expand_sea([(I1,J1) |_]):-
-    assert(solve_cell(I1,J1,blue)).
+    assert_sea(I1,J1).
 
 :- dynamic sea_expansion/0.
 
