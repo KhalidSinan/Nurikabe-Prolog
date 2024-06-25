@@ -559,6 +559,35 @@ diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
    \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
    print_grid.
 
+%filling the empty adjacents with sea
+fill_adjacents(I,J,Row,Col) :-
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    (I1 > 0, I1 =< Row, \+solve_cell(I1, J, _) ->  assert_sea(I1,J) ; true),
+    (I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) ->  assert_sea(I2,J) ; true),
+    (J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) ->  assert_sea(I,J1) ; true),
+    (J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) ->  assert_sea(I,J2) ; true),
+    print_grid,nl,nl.
+% this function checks if an island is completed by comparing the number
+% of its cells with the value of the fixed cell, if its completed then
+% give the island cells list to "fill_adjacents_helper" function
+surrounding_a_complete_island(FixedCells) :-
+    member((I,J,Value),FixedCells),
+    all_nearby_cells(I,J,AllCells),
+    count_of_nearby_cells(I,J,Value),
+    fill_adjacents_helper(AllCells),
+    fail.
+%loop for "fill_adjacents" function
+fill_adjacents_helper([(I,J) | T]):-
+    fill_adjacents(I,J,7,7),
+    fill_adjacents_helper(T).
+%tha main function, get all fixed cells and give them to "surrounding_a_complete_island" function
+sea_around_island :-
+    findall((I,J,Value),fxd_cell(I,J,Value),FixedCells),
+    surrounding_a_complete_island(FixedCells).
+
 
 % startegy 4 is : if a cell was surrounded by three sea , the fourth
 % will be land
