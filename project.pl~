@@ -16,6 +16,7 @@ fxd_cell(7,7,6).
 
 
 
+
 % solve_cell()
 :- dynamic solve_cell/3.
 solve_cell(1,1,'blue').
@@ -49,7 +50,7 @@ solve_cell(4,2,'blue').
 solve_cell(4,3,'blue').
 solve_cell(4,4,'blue').
 solve_cell(4,5,'blue').
-%solve_cell(4,6,'blue').
+solve_cell(4,6,'blue').
 solve_cell(4,7,'green').
 
 solve_cell(5,1,'blue').
@@ -83,8 +84,8 @@ solve_cell(7,7,'green').
 %   if you are then dont check anything
 %   else get the color of the cell and beside it, below it and
 %   beside-below
-%   if the four cells are blue then it's false
-%   otherwise it's all true
+%   if the four cells are blue then its false
+%   otherwise its all true
 no2by2sea(I,_):-
     grid_size(N,_),
     I==N,!.
@@ -122,6 +123,18 @@ nearby_cells(I, J, [H1, H2, H3, H4]) :-
     (solve_cell(I2, J, Color) -> H2 = (I2, J) ; H2 = []),
     (solve_cell(I, J1, Color) -> H3 = (I, J1) ; H3 = []),
     (solve_cell(I, J2, Color) -> H4 = (I, J2) ; H4 = []).
+
+nearby_empty_cells(I, J, Row, Col, [H1 , H2 , H3 , H4]) :-
+I1 is I - 1,
+I2 is I + 1,
+J1 is J - 1,
+J2 is J + 1,
+% if the adjacent cell have the same color as the specific cell,
+% add it to the list else add empty list.
+(I1 > 0, I1 =< Row, \+solve_cell(I1, J, _) -> H1 = (I1, J) ; H1 = [] ),
+(I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) -> H2 = (I2, J) ; H2 = [] ),
+(J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) -> H3 = (I, J1) ; H3 = [] ),
+(J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) -> H4 = (I, J2) ; H4 = [] ).
 
 remove_empty_lists([], []).
 remove_empty_lists([H|T], [H|Result]) :-
@@ -197,9 +210,11 @@ one_fixed_cell_in_island:- true.
 
 % hamza - start
 
-% island_number_equals_size :
 
 % in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
+
+island_number_equals_size :-
+    find_cells_with_numbers().
 
 find_cells_with_numbers() :-
     findall((X,Y,Value),fxd_cell(X,Y,Value), List),
@@ -235,8 +250,10 @@ calculate_number_of_cells_sea(Sum):-
     length(List, Sum),!.
 % A function bring A sum of the fxd_ cell value List
 get_all_fxd_cells(Sum):-
-     findall(Value,fxd_cell(_,_,Value),ListOfValue),
-     sum_list_of_value(ListOfValue,Sum).
+
+    findall(Value,fxd_cell(_,_,Value),ListOfValue),
+    sum_list_of_value(ListOfValue,Sum).
+
 % A function bring the number of solved cell
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
@@ -252,7 +269,45 @@ one_sea:-
     Sum1+Sum2-1 =:= Sum3.
 % tima_end
 
-% Part two
+% sea-expansion
+
+
+% sea expansion algorithm:
+% - loop through every sea cell
+% - get nearby cells of current sea cell and filter them
+% - if not empty skip this cell 
+%   because the sea cell is already connected to another sea cell
+% - if empty get nearby empty cells and filter them
+% - if length equal 1 make it sea
+% - if not skip
+
+expand_sea([(I1,J1) |_]):-
+    assert_sea(I1,J1).
+
+:- dynamic sea_expansion/0.
+
+sea_expansion.
+sea_expansion :-
+    findall((I,J), solve_cell(I,J,blue),List),
+    sea_expansion_helper(List),!. 
+
+
+sea_expansion_helper([]).
+sea_expansion_helper([(I,J) | T]) :-
+    nearby_cells(I,J,Cells),
+    remove_empty_lists(Cells,FilteredCells),
+    (FilteredCells == [] -> (
+    nearby_empty_cells(I,J,7,7,EmptyCells), 
+    remove_empty_lists(EmptyCells,FilteredEmptyCells),
+    length(FilteredEmptyCells, N), 
+    (N == 1 -> 
+    expand_sea(FilteredEmptyCells)
+    ; sea_expansion_helper(T))
+    ) 
+    ; sea_expansion_helper(T)). 
+
+
+
 
 % Add Sea if not added
 assert_sea(I,J):-
@@ -469,7 +524,6 @@ get_col(X):- grid_size(_,M) , between(1,M,Y),
     \+solve_cell(X,Y,_), write('  _    ')),
     fail.
 
-
 %stop when no more cells
 restart:- \+ solve_cell(_, _, _).
 % check if there is a fact exist, retract the fact, recursive call to
@@ -503,6 +557,35 @@ diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
    \+solve_cell(I,J2,_),\+solve_cell(I2,J,_),solve_cell(I1,J,_),solve_cell(I,J1,_)-> assert_sea(I2,J2);
    \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
    print_grid.
+
+%filling the empty adjacents with sea
+fill_adjacents(I,J,Row,Col) :-
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    (I1 > 0, I1 =< Row, \+solve_cell(I1, J, _) ->  assert_sea(I1,J) ; true),
+    (I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) ->  assert_sea(I2,J) ; true),
+    (J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) ->  assert_sea(I,J1) ; true),
+    (J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) ->  assert_sea(I,J2) ; true),
+    print_grid,nl,nl.
+% this function checks if an island is completed by comparing the number
+% of its cells with the value of the fixed cell, if its completed then
+% give the island cells list to "fill_adjacents_helper" function
+surrounding_a_complete_island(FixedCells) :-
+    member((I,J,Value),FixedCells),
+    all_nearby_cells(I,J,AllCells),
+    count_of_nearby_cells(I,J,Value),
+    fill_adjacents_helper(AllCells),
+    fail.
+%loop for "fill_adjacents" function
+fill_adjacents_helper([(I,J) | T]):-
+    fill_adjacents(I,J,7,7),
+    fill_adjacents_helper(T).
+%tha main function, get all fixed cells and give them to "surrounding_a_complete_island" function
+sea_around_island :-
+    findall((I,J,Value),fxd_cell(I,J,Value),FixedCells),
+    surrounding_a_complete_island(FixedCells).
 
 
 % startegy 4 is : if a cell was surrounded by three sea , the fourth
@@ -599,3 +682,10 @@ wall_continuity:-
     (S \= (-1, -1) ->
         wall_continuity_helper(S)).
 wall_continuity:-true.
+
+
+solved :-
+    one_sea,
+    no_2_by_2_sea,
+    one_fixed_cell_in_island,
+    island_number_equals_size.
