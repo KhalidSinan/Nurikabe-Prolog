@@ -275,7 +275,7 @@ one_sea:-
 % sea expansion algorithm:
 % - loop through every sea cell
 % - get nearby cells of current sea cell and filter them
-% - if not empty skip this cell 
+% - if not empty skip this cell
 %   because the sea cell is already connected to another sea cell
 % - if empty get nearby empty cells and filter them
 % - if length equal 1 make it sea
@@ -289,7 +289,7 @@ expand_sea([(I1,J1) |_]):-
 sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
-    sea_expansion_helper(List),!. 
+    sea_expansion_helper(List),!.
 
 
 sea_expansion_helper([]).
@@ -297,14 +297,14 @@ sea_expansion_helper([(I,J) | T]) :-
     nearby_cells(I,J,Cells),
     remove_empty_lists(Cells,FilteredCells),
     (FilteredCells == [] -> (
-    nearby_empty_cells(I,J,7,7,EmptyCells), 
+    nearby_empty_cells(I,J,7,7,EmptyCells),
     remove_empty_lists(EmptyCells,FilteredEmptyCells),
-    length(FilteredEmptyCells, N), 
-    (N == 1 -> 
+    length(FilteredEmptyCells, N),
+    (N == 1 ->
     expand_sea(FilteredEmptyCells)
     ; sea_expansion_helper(T))
-    ) 
-    ; sea_expansion_helper(T)). 
+    )
+    ; sea_expansion_helper(T)).
 
 
 
@@ -495,6 +495,21 @@ island_continuity_helper(I,J):-
     get_fxd_island_value(I, J, Value, Length),
     Value > Length.
 
+island_continuity_diagonal([A,B,C,D], X, Y, X1, X2, Y1, Y2):-
+     (   island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y2, _) ->  assert_land(X, Y2)
+            ;   \+ solve_cell(X2, Y, _) -> assert_land(X2, Y) ;   true              );   true),
+     (   island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y1, _) ->  assert_land(X, Y1)
+            ;   \+ solve_cell(X2, Y, _) -> assert_land(X2, Y) ;   true              );   true),
+     (   island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y1, _) ->  assert_land(X, Y1)
+            ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true),
+    (   island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y2, _) ->  assert_land(X, Y2)
+            ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true).
+
+
 island_continuity :-
     get_alone_cell(I,J),
     I1 is I - 1,
@@ -506,11 +521,13 @@ island_continuity :-
     I4 is I + 2,
     J3 is J - 2,
     J4 is J + 2,
-    % check if it is fixed then add the cell inbetween
+    nearby_neighbors_cells(I,J, S),
+    island_continuity_diagonal(S, I, J, I1, I2, J1, J2),
     (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
+
 
 %SARA
 %new print method
