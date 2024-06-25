@@ -524,7 +524,6 @@ get_col(X):- grid_size(_,M) , between(1,M,Y),
     \+solve_cell(X,Y,_), write('  _    ')),
     fail.
 
-
 %stop when no more cells
 restart:- \+ solve_cell(_, _, _).
 % check if there is a fact exist, retract the fact, recursive call to
