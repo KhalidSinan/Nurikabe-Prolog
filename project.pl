@@ -16,80 +16,8 @@ fxd_cell(7,7,6).
 
 
 
-% solve_cell()
-<<<<<<< HEAD
-% solve_cell(1,1,blue).
-% solve_cell(1,2,green).
-% solve_cell(1,3,green).
-% solve_cell(1,4,green).
-% solve_cell(1,5,blue).
-% solve_cell(1,6,green).
-% solve_cell(1,7,blue).
-% 
-% 
-% solve_cell(2,1,blue).
-% solve_cell(2,2,blue).
-% solve_cell(2,3,blue).
-% solve_cell(2,4,blue).
-% solve_cell(2,5,blue).
-% solve_cell(2,6,blue).
-% solve_cell(2,7,blue).
-% 
-% solve_cell(3,1,green).
-% solve_cell(3,2,green).
-% solve_cell(3,3,blue). # 3,3,blue
-% solve_cell(3,4,green).
-% solve_cell(3,5,blue). # 3,5,blue
-% solve_cell(3,6,green).
-% solve_cell(3,7,green).
-% 
-% 
-% solve_cell(4,1,blue).
-% solve_cell(4,2,blue).
-% solve_cell(4,3,blue).
-% solve_cell(4,4,blue).
-% solve_cell(4,5,blue).
-% solve_cell(4,6,blue).
-% solve_cell(4,7,green).
-% 
-% solve_cell(5,1,blue).
-% solve_cell(5,2,green).
-% solve_cell(5,3,blue).
-% solve_cell(5,4,green). # 5,4,blue
-% solve_cell(5,5,green).
-% solve_cell(5,6,blue).
-% solve_cell(5,7,green).
-% 
-% solve_cell(6,1,blue).
-% solve_cell(6,2,blue).
-% solve_cell(6,3,green).
-% solve_cell(6,4,blue).
-% solve_cell(6,5,blue).
-% solve_cell(6,6,blue).
-% solve_cell(6,7,green).
-% 
-% solve_cell(7,1,green).
-% solve_cell(7,2,blue).
-% solve_cell(7,3,green). # 7,3,blue
-% solve_cell(7,4,blue).
-% solve_cell(7,5,green).
-% solve_cell(7,6,blue).
-% solve_cell(7,7,green).
 
-:- dynamic solve_cell/3.
-solve_cell(1,2,green).
-solve_cell(1,6,green).
-solve_cell(3,1,green).
-solve_cell(3,4,green).
-solve_cell(5,2,green).
-solve_cell(5,5,green).
-solve_cell(6,3,green).
-solve_cell(7,1,green).
-solve_cell(7,5,green).
-solve_cell(7,7,green).
-solve_cell(7,6,blue).
-solve_cell(1,7,blue).
-=======
+% solve_cell()
 :- dynamic solve_cell/3.
 solve_cell(1,1,'blue').
 solve_cell(1,2,'green').
@@ -150,7 +78,6 @@ solve_cell(7,6,'blue').
 solve_cell(7,7,'green').
 
 
->>>>>>> 88ed7f753f9011d5bf03267d0bb78e1f41a2a5c5
 
 %Masa
 %in every cell check if you are either in the last colomn or row,
@@ -283,9 +210,11 @@ one_fixed_cell_in_island:- true.
 
 % hamza - start
 
-% island_number_equals_size :
 
 % in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
+
+island_number_equals_size :-
+    find_cells_with_numbers().
 
 find_cells_with_numbers() :-
     findall((X,Y,Value),fxd_cell(X,Y,Value), List),
@@ -321,20 +250,11 @@ calculate_number_of_cells_sea(Sum):-
     length(List, Sum),!.
 % A function bring A sum of the fxd_ cell value List
 get_all_fxd_cells(Sum):-
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     findall(Value,fxd_cell(_,_,Value),ListOfValue),
     sum_list_of_value(ListOfValue,Sum).
 
-=======
-    findall(Value,fxd_cell(_,_,Value),ListOfValue),
-    sum_list_of_value(ListOfValue,Sum).
-=======
-     findall(Value,fxd_cell(_,_,Value),ListOfValue),
-     sum_list_of_value(ListOfValue,Sum).
->>>>>>> 88ed7f753f9011d5bf03267d0bb78e1f41a2a5c5
 % A function bring the number of solved cell
->>>>>>> cd78bd672155e48de64e16347906e5cd08e14157
 solved_cell_count(Count) :-
     findall(_, solve_cell(_,_,_), Cells),
     length(Cells, Count).
@@ -349,7 +269,6 @@ one_sea:-
     Sum1+Sum2-1 =:= Sum3.
 % tima_end
 
-<<<<<<< HEAD
 % sea-expansion
 
 
@@ -389,9 +308,6 @@ sea_expansion_helper([(I,J) | T]) :-
 
 
 
-=======
-% Part two
->>>>>>> cd78bd672155e48de64e16347906e5cd08e14157
 
 % Add Sea if not added
 assert_sea(I,J):-
@@ -738,3 +654,10 @@ wall_continuity:-
     (S \= (-1, -1) ->
         wall_continuity_helper(S)).
 wall_continuity:-true.
+
+
+solved :-
+    one_sea,
+    no_2_by_2_sea,
+    one_fixed_cell_in_island,
+    island_number_equals_size.
