@@ -214,6 +214,9 @@ one_fixed_cell_in_island:- true.
 island_number_equals_size :-
     find_cells_with_numbers().
 
+island_number_equals_size :-
+    find_cells_with_numbers().
+
 find_cells_with_numbers() :-
     findall((X,Y,Value),fxd_cell(X,Y,Value), List),
      walk_on_cells_with_number(List).
@@ -431,9 +434,23 @@ surrounded_square1(X,Y):-  processing(X,Y),
     X1= X+1,
     surrounded_square1(X1,Y).
 
+<<<<<<< HEAD
 processing(_,Y):- grid_size(_,M) ,Y == M , ! .
 
 processing(X,Y) :- check(X,Y),
+=======
+% is func do like a for(loop) on Rows .
+surrounded_square:- X=1 , Y=1 ,
+    processing(X,Y),
+    X1= X+1,
+    surrounded_square(X1,Y).
+
+processing(_,Y):- grid_size(_,M) ,Y == M , ! .
+
+% is fonc do like afor(loop) on columns and called check for every cell
+processing(X,Y) :-
+        check(X,Y),
+>>>>>>> main
         Y1= Y+1,
        processing(X,Y1).
 
