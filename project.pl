@@ -156,8 +156,6 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
         all_nearby_cells(I, J, NewAcc, NewVisited, UpdatedAcc),
         iterate_and_add(T, NewVisited, UpdatedAcc, Result)
     ).
-
-
 % return list of cells that form an island or a sea.
 % 1- get the adjacent cells for the current cell. => ex: [(1,3),[],(2,3),[]]
 % 2- remove the empty lists from the adjacent cells list (Cells) ex: [(1,3),(2,3)].
@@ -214,7 +212,8 @@ one_fixed_cell_in_island:- true.
 % hamza - start
 
 
-% in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
+island_number_equals_size :-
+    find_cells_with_numbers().
 
 island_number_equals_size :-
     find_cells_with_numbers().
@@ -224,15 +223,11 @@ find_cells_with_numbers() :-
      walk_on_cells_with_number(List).
 
 
-% in this function i will walk on every cells in list and send cell to other function
-% " in short this func its work like a for loop  "
-
 walk_on_cells_with_number([]).
 walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
  count_of_nearby_cells(X,Y,Value),
     walk_on_cells_with_number(Tail).
 
-% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
@@ -293,6 +288,7 @@ sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
     sea_expansion_helper(List),!.
+
 
 
 sea_expansion_helper([]).
@@ -399,25 +395,20 @@ nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
 
 % Diagonally adjacent clues - start (hamza) :
 
-% in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function .
+diagonally_adjacent_clues() :- find_cells_with_number().
+
 find_cells_with_number() :-
     findall((X,Y,Value), fxd_cell(X,Y,Value), List),
     walk_on_cells(List).
 
-% in this function i will walk on every cells in list and send cell to other function
-% " in short this func its work like a for loop  " .
 walk_on_cells([]).
 walk_on_cells([(X,Y,_)|Tail]) :-
     mark_adjacent_cell(X, Y, 1, 1), % Check Right-Down
     mark_adjacent_cell(X, Y, -1, 1), % Check Left-Down
     mark_adjacent_cell(X, Y, -1, -1), % Check Left-Up
     mark_adjacent_cell(X, Y, 1, -1), % Check Right-Up
-    print_grid(),
     walk_on_cells(Tail).
 
-
-% in this func i will test if the Diagonalcells fxd_cell i will assert
-%  diagonalCell of solved_cell(blue) to this cells .
 mark_adjacent_cell(X, Y, DX, DY) :-
     X1 is X + DX,
     Y1 is Y + DY,
@@ -425,7 +416,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
         (retractall(solve_cell(X, Y1, _)),
          asserta(solve_cell(X, Y1, 'blue')),
          retractall(solve_cell(X1, Y, _)),
-         asserta(solve_cell(X1, Y, 'blue')))
+         asserta(solve_cell(X1, Y, 'blue'))) , print_grid()
     ; true). % Do nothing if the adjacent cell is not fixed .
 
 % Diagonally adjacent clues - end (hamza) .
@@ -433,18 +424,20 @@ mark_adjacent_cell(X, Y, DX, DY) :-
 
 % Surrounded square - start (hamza) :
 
- % check if the cell is not solved_cell and not fxd_cell .
-is_empty_cell(X, Y) :-
-    \+ solve_cell(X, Y,_),
+    is_empty_cell(X, Y) :-
+   \+ solve_cell(X, Y,_),
     \+ fxd_cell(X, Y, _).
+surrounded_square1(X,_) :- grid_size(N,_) , X == N , ! .
 
-surrounded_square(X,_) :- grid_size(N,_) , X == N , ! .
+surrounded_square1(X,Y):-  processing(X,Y),
+    X1= X+1,
+    surrounded_square1(X1,Y).
+
+surrounded_square():-
+    X = 1 , Y = 1,
+    surrounded_square1(X,Y).
 
 % is func do like a for(loop) on Rows .
-surrounded_square:- X=1 , Y=1 ,
-    processing(X,Y),
-    X1= X+1,
-    surrounded_square(X1,Y).
 
 processing(_,Y):- grid_size(_,M) ,Y == M , ! .
 
@@ -452,10 +445,8 @@ processing(_,Y):- grid_size(_,M) ,Y == M , ! .
 processing(X,Y) :-
         check(X,Y),
         Y1= Y+1,
-        processing(X,Y1).
+       processing(X,Y1).
 
-% if the cell is empty and is surrounded by sea horizontally and
-% vertically I will assert this cell as solve_cell(blue) .
 check(X,Y):-
     (   is_empty_cell(X,Y),
         X1 is X - 1,
@@ -466,7 +457,7 @@ check(X,Y):-
         solve_cell(X,Y1,b),
         X2 is X + 1,
         solve_cell(X2,Y,b) )
-    -> asserta(solve_cell(X,Y,'blue')) ; true .
+    -> asserta(solve_cell(X,Y,'blue')) , print_grid() ; true .
 
  % Surrounded square - end (hamza) .
 
@@ -477,7 +468,6 @@ assert_land(I,J):-
     % if doesnt exist add cell
     % or return true to continue the next statements
     (\+ solve_cell(I,J,'green') -> asserta(solve_cell(I,J,'green')) ; true).
-
 
 % get a cell that is green and isnt connected to any island
 get_alone_cell(I,J):-
@@ -496,10 +486,26 @@ get_alone_cell(I,J):-
 
 % Island Continuity
 island_continuity_helper(I,J):-
-    get_fxd_island_value(I, J, Value, Length),
-    Value > Length.
+        get_fxd_island_value(I, J, Value, Length),
+        Value > Length + 1.
+
+island_continuity_diagonal([A,B,C,D], X, Y, X1, X2, Y1, Y2):-
+    (  A \= [], A = (I,J),  island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y2, _) ->  assert_land(X, Y2)
+            ;   \+ solve_cell(X2, Y, _) -> assert_land(X2, Y) ;   true              );   true),
+     (  B \= [],  B = (I,J), island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y1, _) ->  assert_land(X, Y1)
+            ;   \+ solve_cell(X2, Y, _) -> assert_land(X2, Y) ;   true              );   true),
+     (  C \= [], C = (I,J), island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y1, _) ->  assert_land(X, Y1)
+            ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true),
+
+     (  D \= [], D = (I,J), island_continuity_helper(I, J) ->
+            (   \+ solve_cell(X, Y2, _) ->  assert_land(X, Y2)
+            ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true).
 
 island_continuity :-
+    print_grid,
     get_alone_cell(I,J),
     I1 is I - 1,
     I2 is I + 1,
@@ -510,11 +516,14 @@ island_continuity :-
     I4 is I + 2,
     J3 is J - 2,
     J4 is J + 2,
-    % check if it is fixed then add the cell inbetween
+    nearby_neighbors_cells(I,J, S),
+    island_continuity_diagonal(S, I, J, I1, I2, J1, J2),
     (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
-    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
+    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true),
+    nl,
+    print_grid.
 
 %SARA
 %new print method
@@ -546,7 +555,6 @@ restart1:-
 restart:-
     restart1,
     assert_green_for_fxd_cells.
-
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
 expandable_only_in_two_directions(I,J):-
@@ -572,13 +580,43 @@ diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
    \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
    print_grid.
 
-% Strategy 4: If a fxd number is surrounded by three sea cells, the
-% fourth will be land.
-return_color(I, J, E) :-
-    grid_size(N, M),
-    (I > N ; J > M ; I < 1 ; J < 1),
-    E = 'blue',
-    !.
+%filling the empty adjacents with sea
+fill_adjacents(I,J,Row,Col) :-
+    I1 is I - 1,
+    I2 is I + 1,
+    J1 is J - 1,
+    J2 is J + 1,
+    (I1 > 0, I1 =< Row, \+solve_cell(I1, J, _) ->  assert_sea(I1,J) ; true),
+    (I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) ->  assert_sea(I2,J) ; true),
+    (J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) ->  assert_sea(I,J1) ; true),
+    (J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) ->  assert_sea(I,J2) ; true),
+    print_grid,nl,nl.
+% this function checks if an island is completed by comparing the number
+% of its cells with the value of the fixed cell, if its completed then
+% give the island cells list to "fill_adjacents_helper" function
+surrounding_a_complete_island(FixedCells) :-
+    member((I,J,Value),FixedCells),
+    all_nearby_cells(I,J,AllCells),
+    count_of_nearby_cells(I,J,Value),
+    fill_adjacents_helper(AllCells),
+    fail.
+%loop for "fill_adjacents" function
+fill_adjacents_helper([(I,J) | T]):-
+    fill_adjacents(I,J,7,7),
+    fill_adjacents_helper(T).
+%tha main function, get all fixed cells and give them to "surrounding_a_complete_island" function
+sea_around_island :-
+    findall((I,J,Value),fxd_cell(I,J,Value),FixedCells),
+    surrounding_a_complete_island(FixedCells).
+
+
+% startegy 4 is : if a cell was surrounded by three sea , the fourth
+% will be land
+return_color(I,J,E):-
+   grid_size(N,M),
+   (I > N ; J > M ; I < 1; J < 1),
+   E = 'blue',
+   !.
 return_color(I, J, E) :-
     (   solve_cell(I, J, X),
         X \= false -> E = X ;   E = 'a'
@@ -708,8 +746,37 @@ solved :-
     island_number_equals_size.
 
 
+check_from_distance(I, J) :-
+        forall(fxd_cell(I2, J2, Value),
+        (
+            I3 is I2 - I,
+            J3 is J2 - J,
+            abs(I3, I4),
+            abs(J3, J4),
+            D is I4 + J4,
+           (D >= Value, ! ; false)
+        )
+    ),
+    !. check_from_distance(_, _) :-
+    false. unreachable_square_helper(I, J, N, M) :-
+        (
+        \+ solve_cell(I, J, _),
+                      check_from_distance(I, J)
+    ) ->
+        assert_sea(I, J)
+    ;
+        I1 is I + 1,
+    J1 is J + 1,
+    (   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
+    (   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
 
 
+unreachable_square:-
+    print_grid,
+    grid_size(N,M),
+    unreachable_square_helper(1,1, N, M),
+    nl,
+    print_grid.
 
 
 
