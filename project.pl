@@ -153,8 +153,6 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
         all_nearby_cells(I, J, NewAcc, NewVisited, UpdatedAcc),
         iterate_and_add(T, NewVisited, UpdatedAcc, Result)
     ).
-
-
 % return list of cells that form an island or a sea.
 % 1- get the adjacent cells for the current cell. => ex: [(1,3),[],(2,3),[]]
 % 2- remove the empty lists from the adjacent cells list (Cells) ex: [(1,3),(2,3)].
@@ -287,8 +285,6 @@ sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
     sea_expansion_helper(List),!.
-
-
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
     nearby_cells(I,J,Cells),
@@ -412,7 +408,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
         (retractall(solve_cell(X, Y1, _)),
          asserta(solve_cell(X, Y1, 'blue')),
          retractall(solve_cell(X1, Y, _)),
-         asserta(solve_cell(X1, Y, 'blue')))
+         asserta(solve_cell(X1, Y, 'blue'))) , print_grid()
     ; true). % Do nothing if the adjacent cell is not fixed .
 
 % Diagonally adjacent clues - end (hamza) .
@@ -433,12 +429,6 @@ surrounded_square1(X,_) :- grid_size(N,_) , X == N , ! .
 surrounded_square1(X,Y):-  processing(X,Y),
     X1= X+1,
     surrounded_square1(X1,Y).
-
-<<<<<<< HEAD
-processing(_,Y):- grid_size(_,M) ,Y == M , ! .
-
-processing(X,Y) :- check(X,Y),
-=======
 % is func do like a for(loop) on Rows .
 surrounded_square:- X=1 , Y=1 ,
     processing(X,Y),
@@ -450,7 +440,6 @@ processing(_,Y):- grid_size(_,M) ,Y == M , ! .
 % is fonc do like afor(loop) on columns and called check for every cell
 processing(X,Y) :-
         check(X,Y),
->>>>>>> main
         Y1= Y+1,
        processing(X,Y1).
 
@@ -464,7 +453,7 @@ check(X,Y):-
         solve_cell(X,Y1,b),
         X2 is X + 1,
         solve_cell(X2,Y,b) )
-    -> asserta(solve_cell(X,Y,'blue')) ; true .
+    -> asserta(solve_cell(X,Y,'blue')) , print_grid() ; true .
 
  % Surrounded square - end (hamza) .
 
@@ -475,8 +464,6 @@ assert_land(I,J):-
     % if doesnt exist add cell
     % or return true to continue the next statements
     (\+ solve_cell(I,J,'green') -> asserta(solve_cell(I,J,'green')) ; true).
-
-
 
 % get a cell that is green and isnt connected to any island
 get_alone_cell(I,J):-
@@ -554,7 +541,6 @@ restart:-
     solve_cell(X, Y, Color),
     retract(solve_cell(X, Y, Color)),
     restart.
-
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
 expandable_only_in_two_directions(I,J):-
@@ -714,33 +700,25 @@ solved :-
 
 
 check_from_distance(I, J) :-
-    % Loop through all fxd_cells
-    forall(fxd_cell(I2, J2, Value),
+        forall(fxd_cell(I2, J2, Value),
         (
-            % Calculate distance:
             I3 is I2 - I,
             J3 is J2 - J,
             abs(I3, I4),
             abs(J3, J4),
             D is I4 + J4,
-            % Check if the distance is less than or equal to the value:
-            (D >= Value, ! ; false)
+                        (D >= Value, ! ; false)
         )
     ),
-    !. % Cut to prevent further backtracking
-check_from_distance(_, _) :-
-    false. % If any check fails, return false
-
-unreachable_square_helper(I, J, N, M) :-
-    % For debugging
-    (
+    !. check_from_distance(_, _) :-
+    false. unreachable_square_helper(I, J, N, M) :-
+        (
         \+ solve_cell(I, J, _),
                       check_from_distance(I, J)
     ) ->
         assert_sea(I, J)
     ;
-    % Continue to the next cell regardless of previous checks:
-    I1 is I + 1,
+        I1 is I + 1,
     J1 is J + 1,
     (   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
     (   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
@@ -752,4 +730,5 @@ unreachable_square:-
     unreachable_square_helper(1,1, N, M),
     nl,
     print_grid.
+
 
