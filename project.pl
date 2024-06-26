@@ -17,6 +17,7 @@ fxd_cell(7,7,6).
 
 
 
+
 % solve_cell()
 :- dynamic solve_cell/3.
 solve_cell(1,1,'blue').
@@ -76,7 +77,6 @@ solve_cell(7,4,'blue').
 solve_cell(7,5,'green').
 solve_cell(7,6,'blue').
 solve_cell(7,7,'green').
-
 
 
 %Masa
@@ -175,9 +175,13 @@ all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
 all_nearby_cells(I, J, AllCells) :-
     % if the passed cell was fixed cell of number 1,
     % then the result is the passed cell only.
-    fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
-    all_nearby_cells(I, J, [], [(I, J)], AllCells).
-
+     (nearby_cells(I, J, Cells),
+     remove_empty_lists(Cells, FilteredCells),
+      FilteredCells == [] ->
+        AllCells = [(I, J)]
+    ;
+        all_nearby_cells(I, J, [], [(I, J)], AllCells)
+    ).
 add_element((X, Y), List, [(X,Y) | List]).
 
 
@@ -475,7 +479,7 @@ get_alone_cell(I,J):-
     \+ fxd_cell(I,J,_),
     all_nearby_cells(I,J, List),
     length(List, Length),
-    Length =:= 0.
+    Length =:= 1.
 
 % get fixed island value of this island
  get_fxd_island_value(I, J, Value, Length):-

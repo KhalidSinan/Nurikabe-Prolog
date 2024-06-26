@@ -17,6 +17,7 @@ fxd_cell(7,7,6).
 
 
 
+
 % solve_cell()
 :- dynamic solve_cell/3.
 solve_cell(1,1,'blue').
@@ -76,7 +77,6 @@ solve_cell(7,4,'blue').
 solve_cell(7,5,'green').
 solve_cell(7,6,'blue').
 solve_cell(7,7,'green').
-
 
 
 %Masa
@@ -175,9 +175,13 @@ all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
 all_nearby_cells(I, J, AllCells) :-
     % if the passed cell was fixed cell of number 1,
     % then the result is the passed cell only.
-    fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
-    all_nearby_cells(I, J, [], [(I, J)], AllCells).
-
+     (nearby_cells(I, J, Cells),
+     remove_empty_lists(Cells, FilteredCells),
+      FilteredCells == [] ->
+        AllCells = [(I, J)]
+    ;
+        all_nearby_cells(I, J, [], [(I, J)], AllCells)
+    ).
 add_element((X, Y), List, [(X,Y) | List]).
 
 
@@ -400,6 +404,8 @@ diagonally_adjacent_clues() :- find_cells_with_number().
 find_cells_with_number() :-
     findall((X,Y,Value), fxd_cell(X,Y,Value), List),
     walk_on_cells(List).
+
+walk_on_cells([]).
 walk_on_cells([(X,Y,_)|Tail]) :-
     mark_adjacent_cell(X, Y, 1, 1), % Check Right-Down
     mark_adjacent_cell(X, Y, -1, 1), % Check Left-Down
@@ -473,7 +479,7 @@ get_alone_cell(I,J):-
     \+ fxd_cell(I,J,_),
     all_nearby_cells(I,J, List),
     length(List, Length),
-    Length =:= 0.
+    Length =:= 1.
 
 % get fixed island value of this island
  get_fxd_island_value(I, J, Value, Length):-
@@ -752,7 +758,7 @@ check_from_distance(I, J) :-
             abs(I3, I4),
             abs(J3, J4),
             D is I4 + J4,
-                        (D >= Value, ! ; false)
+           (D >= Value, ! ; false)
         )
     ),
     !. check_from_distance(_, _) :-
