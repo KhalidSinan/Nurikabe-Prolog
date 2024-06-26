@@ -102,12 +102,15 @@ no2by2sea(I, J):-
     solve_cell(I1, J1, Num4),
 %    format('Checking cells: (~w,~w,~w, ~w, ~w, ~w)~n', [I, J, Num,
 %    Num2, Num3, Num4]),
-    \+ (Num == 'blue', Num2 == 'blue', Num3 == 'blue', Num4 == 'blue'),
-    no2by2sea(I1,J),
-    no2by2sea(I,J1)
+    \+ (Num == 'blue', Num2 == 'blue', Num3 == 'blue', Num4 == 'blue')
     .
 no_2_by_2_sea:-
-    no2by2sea(1,1).
+    grid_size(N,M),
+    N1 is N - 1,
+    M1 is M - 1,
+    between(1,N1,I),
+    between(1,M1,J),
+    no2by2sea(I,J).
 
 
 % get the adjacent cells for specific cell.
@@ -275,7 +278,7 @@ one_sea:-
 % sea expansion algorithm:
 % - loop through every sea cell
 % - get nearby cells of current sea cell and filter them
-% - if not empty skip this cell 
+% - if not empty skip this cell
 %   because the sea cell is already connected to another sea cell
 % - if empty get nearby empty cells and filter them
 % - if length equal 1 make it sea
@@ -289,22 +292,23 @@ expand_sea([(I1,J1) |_]):-
 sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
-    sea_expansion_helper(List),!. 
+    sea_expansion_helper(List),!.
 
 
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
     nearby_cells(I,J,Cells),
+    grid_size(X,Y),
     remove_empty_lists(Cells,FilteredCells),
     (FilteredCells == [] -> (
-    nearby_empty_cells(I,J,7,7,EmptyCells), 
+    nearby_empty_cells(I,J,X,Y,EmptyCells),
     remove_empty_lists(EmptyCells,FilteredEmptyCells),
-    length(FilteredEmptyCells, N), 
-    (N == 1 -> 
+    length(FilteredEmptyCells, N),
+    (N == 1 ->
     expand_sea(FilteredEmptyCells)
     ; sea_expansion_helper(T))
-    ) 
-    ; sea_expansion_helper(T)). 
+    )
+    ; sea_expansion_helper(T)).
 
 
 
@@ -525,14 +529,23 @@ get_col(X):- grid_size(_,M) , between(1,M,Y),
     fail.
 
 
+assert_green_for_fxd_cells :-
+    fxd_cell(I, J, _),
+    assert_land(I, J),
+    fail.
+assert_green_for_fxd_cells :-true.
 %stop when no more cells
-restart:- \+ solve_cell(_, _, _).
+restart1:- \+ solve_cell(_, _, _),assert_green_for_fxd_cells.
 % check if there is a fact exist, retract the fact, recursive call to
 % process the next cell
-restart:-
+restart1:-
     solve_cell(X, Y, Color),
     retract(solve_cell(X, Y, Color)),
     restart.
+
+restart:-
+    restart1,
+    assert_green_for_fxd_cells.
 
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
@@ -559,54 +572,85 @@ diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
    \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
    print_grid.
 
-
-% startegy 4 is : if a cell was surrounded by three sea , the fourth
-% will be land
-return_color(I,J,E):-
-   grid_size(N,M),
-   (I > N ; J > M ; I < 1; J < 1),
-   E = 'blue',
-   !.
-return_color(I,J,E):-
-    solve_cell(I,J,E).
-cnt_blue(C,R):-
-    C == 'blue',
-    R = 1,
+% Strategy 4: If a fxd number is surrounded by three sea cells, the
+% fourth will be land.
+return_color(I, J, E) :-
+    grid_size(N, M),
+    (I > N ; J > M ; I < 1 ; J < 1),
+    E = 'blue',
     !.
-cnt_blue(_,R):-
-    R = 0.
-round_blue(I,J,Total):-
-    I1 is I + 1,
-    I2 is I - 1,
-    J1 is J + 1,
-    J2 is J - 1,
-    return_color(I1,J,C1),
-    return_color(I2,J,C2),
-    return_color(I,J1,C3),
-    return_color(I,J2,C4),
-    cnt_blue(C1,R1),
-    cnt_blue(C2,R2),
-    cnt_blue(C3,R3),
-    cnt_blue(C4,R4),
-    R5 is R1 + R2,
-    R6 is R3+R4,
-    Total is R5+R6.
-begin_strategy_4(I,J):-
-    round_blue(I,J,Total),
-    Total == 3,
-    I1 is I + 1,
-    I2 is I - 1,
-    J1 is J + 1,
-    J2 is J - 1,
-    (return_color(I1,J,Co),Co \= 'blue' , assert_land(solve_cell(I1,J)));
-    (return_color(I2,J,Co),Co \= 'blue' , assert_land(solve_cell(I2,J)));
-    (return_color(I,J1,Co),Co \= 'blue' , assert_land(solve_cell(I,J1)));
-    (return_color(I,J2,Co),Co \= 'blue' , assert_land(solve_cell(I1,J)));
-    begin_strategy_4(I1,J),
-    begin_strategy_4(I,J1).
+return_color(I, J, E) :-
+    (   solve_cell(I, J, X),
+        X \= false -> E = X ;   E = 'a'
+    ).
 
-strategy_4:-
-    begin_strategy_4(1,1).
+cnt_blue('blue', 1) :- !.
+cnt_blue(_, 0).
+
+begin_strategy_4(I, J) :-
+    I1 is I + 1,
+    I2 is I - 1,
+    J1 is J + 1,
+    J2 is J - 1,
+    return_color(I1, J, C1),cnt_blue(C1, R1),
+    return_color(I2, J, C2),cnt_blue(C2, R2),
+    return_color(I, J1, C3),cnt_blue(C3, R3),
+    return_color(I, J2, C4),cnt_blue(C4, R4),
+    Total is R1 + R2 + R3 + R4,
+    %format('Checking cells: (~w,~w,~w)~n', [I, J, Total]),
+    Total == 3,
+    (
+      ( C1 \= 'blue', assert_land(I1, J));
+      ( C2 \= 'blue', assert_land(I2, J));
+      ( C3 \= 'blue', assert_land(I, J1));
+      ( C4 \= 'blue', assert_land(I, J2))
+     ),
+    fail.
+begin_strategy_4(_,_):-
+    fail.
+strategy_4 :-
+    fxd_cell(I, J, _),
+    begin_strategy_4(I, J).
+strategy_4.
+island_expansion_from_a_clue:-
+    strategy_4,
+    print_grid.
+
+%avoiding_wall_area_of_2by2 (Masa)
+check_four_around_one(I, J) :-
+    I1 is I + 1,
+    J1 is J + 1,
+    return_color(I, J, C1),cnt_blue(C1, R1),
+    return_color(I1, J, C2),cnt_blue(C2, R2),
+    return_color(I, J1, C3),cnt_blue(C3, R3),
+    return_color(I1, J1, C4),cnt_blue(C4, R4),
+    Total is R1 + R2 + R3 + R4,
+    %format('Checking cells: (~w,~w,~w)~n', [I, J, Total]),
+    Total == 3,
+    (
+      ( C1 \= 'blue',C1 \= 'green', assert_land(I, J));
+      ( C2 \= 'blue',C2 \= 'green', assert_land(I1, J));
+      ( C3 \= 'blue',C3 \= 'green', assert_land(I, J1));
+      ( C4 \= 'blue',C4 \= 'green', assert_land(I1, J1))
+     ),
+    fail.
+check_four_around_one(_,_):-
+    fail.
+
+strategy_12:-
+    grid_size(N,M),
+    N1 is N - 1,
+    M1 is M - 1,
+    between(1,N1,I),
+    between(1,M1,J),
+    check_four_around_one(I,J),
+    fail.
+strategy_12.
+avoiding_wall_area_of_2by2:-
+    strategy_12,
+    print_grid.
+
+
 
 % Wall Continuity (Tima)
 
@@ -617,7 +661,7 @@ return_cell_from_nearby_can_become_sea(List, (X,Y)) :-
 return_cell_from_nearby_can_become_sea(_, (-1, -1)).
 
 nearby_of_list_of_neighBors_helper(I, J, [H1, H2, H3, H4]) :-
-    solve_cell(I, J, _), % get the cell color.
+    solve_cell(I , J, _), % get the cell color.
     grid_size(N,M),
     I1 is I - 1,
     I2 is I + 1,
@@ -656,8 +700,26 @@ wall_continuity:-
 wall_continuity:-true.
 
 
+
 solved :-
     one_sea,
     no_2_by_2_sea,
     one_fixed_cell_in_island,
     island_number_equals_size.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
