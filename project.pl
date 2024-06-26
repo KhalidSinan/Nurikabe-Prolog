@@ -335,10 +335,9 @@ put_sea_around_ones :-
     assert_sea(I,J2),
     assert_sea(I2,J),
     % to backtrack,
-    nl,print_grid,
-    fail.
+       fail.
 
-put_sea_around_ones:- true.
+put_sea_around_ones:- nl,print_grid, true.
 
 % To remove cells that are out of board
 remove_cells_out_of_board:-
@@ -379,9 +378,8 @@ put_sea_between_cells_seperated_by_one :-
     (   fxd_cell(I, J4, _) -> assert_sea(I,J2) ; true),
     (   fxd_cell(I4, J, _) -> assert_sea(I2,J) ; true),
     % to backtrack
-    nl,print_grid,
     fail.
-put_sea_between_cells_seperated_by_one:-   true.
+put_sea_between_cells_seperated_by_one:- nl,print_grid, true.
 
 
 nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
@@ -532,7 +530,7 @@ island_continuity :-
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true),
     nl,
     print_grid.
-
+island_continuity :- true.
 %SARA
 %new print method
 grid_size(7,7).
@@ -745,7 +743,8 @@ wall_continuity:-
     (S \= (-1, -1) ->
         wall_continuity_helper(S)),
     nl,print_grid.
-wall_continuity:-true.
+
+wall_continuity:- true.
 
 
 
