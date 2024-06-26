@@ -285,6 +285,7 @@ expand_sea([(I1,J1) |_]):-
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
     sea_expansion_helper(List).
+sea_expansion.
 
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
@@ -299,7 +300,6 @@ sea_expansion_helper([(I,J) | T]) :-
     ; sea_expansion_helper(T))
     )
     ; sea_expansion_helper(T)).
-sea_expansion.
 
 
 

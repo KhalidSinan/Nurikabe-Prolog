@@ -642,10 +642,10 @@ begin_strategy_4(I, J) :-
 
     Total == 3,
     (
-      ( C1 \= 'blue', assert_land(I1, J));
-      ( C2 \= 'blue', assert_land(I2, J));
-      ( C3 \= 'blue', assert_land(I, J1));
-      ( C4 \= 'blue', assert_land(I, J2))
+      ( C1 \= 'blue',C1 \= 'green',  assert_land(I1, J));
+      ( C2 \= 'blue',C1 \= 'green',  assert_land(I2, J));
+      ( C3 \= 'blue',C1 \= 'green',  assert_land(I, J1));
+      ( C4 \= 'blue',C1 \= 'green',  assert_land(I, J2))
      ),
     fail.
 begin_strategy_4(_,_).
