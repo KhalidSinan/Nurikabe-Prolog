@@ -1,3 +1,4 @@
+
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
 fxd_cell(1,6,1).
@@ -13,7 +14,6 @@ fxd_cell(6,3,2).
 fxd_cell(7,1,1).
 fxd_cell(7,5,1).
 fxd_cell(7,7,6).
-
 
 
 
@@ -77,7 +77,6 @@ solve_cell(7,4,'blue').
 solve_cell(7,5,'green').
 solve_cell(7,6,'blue').
 solve_cell(7,7,'green').
-
 
 %Masa
 %in every cell check if you are either in the last colomn or row,
@@ -323,6 +322,7 @@ assert_sea(I,J):-
 % Put Sea Around Ones
 put_sea_around_ones :-
     % Get Fixed Cell that has value of 1
+    print_grid,
     fxd_cell(I, J, 1),
     % get the nearby cells
     I1 is I - 1,
@@ -334,8 +334,10 @@ put_sea_around_ones :-
     assert_sea(I1,J),
     assert_sea(I,J2),
     assert_sea(I2,J),
-    % to backtrack
+    % to backtrack,
+    nl,print_grid,
     fail.
+
 put_sea_around_ones:- true.
 
 % To remove cells that are out of board
@@ -358,6 +360,7 @@ get_fxd_cells(List):-
 
 % Put Sea Between Cells Seperated By One
 put_sea_between_cells_seperated_by_one :-
+    print_grid,
     % Get Random Fixed Cell
     fxd_cell(I, J, _),
     % get the nearby cells
@@ -376,6 +379,7 @@ put_sea_between_cells_seperated_by_one :-
     (   fxd_cell(I, J4, _) -> assert_sea(I,J2) ; true),
     (   fxd_cell(I4, J, _) -> assert_sea(I2,J) ; true),
     % to backtrack
+    nl,print_grid,
     fail.
 put_sea_between_cells_seperated_by_one:-   true.
 
@@ -734,11 +738,13 @@ give_cell_should_become_sea(_, (-1, -1)).
 wall_continuity_helper((I,J)):- assert_sea(I,J).
 
 wall_continuity:-
+    print_grid,
     solve_cell(I,J,blue),
     all_nearby_cells(I,J,List),
     give_cell_should_become_sea(List,S),
     (S \= (-1, -1) ->
-        wall_continuity_helper(S)).
+        wall_continuity_helper(S)),
+    nl,print_grid.
 wall_continuity:-true.
 
 
