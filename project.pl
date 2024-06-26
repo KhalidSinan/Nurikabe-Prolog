@@ -1,3 +1,4 @@
+
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
 fxd_cell(1,6,1).
@@ -19,65 +20,63 @@ fxd_cell(7,7,6).
 
 % solve_cell()
 :- dynamic solve_cell/3.
-solve_cell(1,1,'blue').
+%solve_cell(1,1,'blue').
 solve_cell(1,2,'green').
 solve_cell(1,3,'green').
 solve_cell(1,4,'green').
-solve_cell(1,5,'blue').
+%solve_cell(1,5,'blue').
 solve_cell(1,6,'green').
-solve_cell(1,7,'blue').
+%solve_cell(1,7,'blue').
 
 
-solve_cell(2,1,'blue').
-solve_cell(2,2,'blue').
-solve_cell(2,3,'blue').
-solve_cell(2,4,'blue').
-solve_cell(2,5,'blue').
-solve_cell(2,6,'blue').
-solve_cell(2,7,'blue').
-
-solve_cell(3,1,'green').
-solve_cell(3,2,'green').
-solve_cell(3,3,'blue').
-solve_cell(3,4,'green').
-solve_cell(3,5,'blue').
-solve_cell(3,6,'green').
-solve_cell(3,7,'green').
-
-
-solve_cell(4,1,'blue').
-solve_cell(4,2,'blue').
-solve_cell(4,3,'blue').
-solve_cell(4,4,'blue').
-solve_cell(4,5,'blue').
-solve_cell(4,6,'blue').
-solve_cell(4,7,'green').
-
-solve_cell(5,1,'blue').
-solve_cell(5,2,'green').
-solve_cell(5,3,'blue').
+%solve_cell(2,1,'blue').
+%solve_cell(2,2,'blue').
+%solve_cell(2,3,'blue').
+%solve_cell(2,4,'blue').
+%solve_cell(2,5,'blue').
+%solve_cell(2,6,'blue').
+%solve_cell(2,7,'blue').
+%
+%solve_cell(3,1,'green').
+%solve_cell(3,2,'green').
+%solve_cell(3,3,'blue').
+%solve_cell(3,4,'green').
+%solve_cell(3,5,'blue').
+%solve_cell(3,6,'green').
+%solve_cell(3,7,'green').
+%
+%
+%solve_cell(4,1,'blue').
+%solve_cell(4,2,'blue').
+%solve_cell(4,3,'blue').
+%solve_cell(4,4,'blue').
+%solve_cell(4,5,'blue').
+%solve_cell(4,6,'blue').
+%solve_cell(4,7,'green').
+%
+%solve_cell(5,1,'blue').
+%solve_cell(5,2,'green').
+%solve_cell(5,3,'blue').
 solve_cell(5,4,'green').
 solve_cell(5,5,'green').
-solve_cell(5,6,'blue').
-solve_cell(5,7,'green').
-
-solve_cell(6,1,'blue').
-solve_cell(6,2,'blue').
-solve_cell(6,3,'green').
-solve_cell(6,4,'blue').
-solve_cell(6,5,'blue').
-solve_cell(6,6,'blue').
-solve_cell(6,7,'green').
-
-solve_cell(7,1,'green').
-solve_cell(7,2,'blue').
-solve_cell(7,3,'green').
-solve_cell(7,4,'blue').
-solve_cell(7,5,'green').
-solve_cell(7,6,'blue').
-solve_cell(7,7,'green').
-
-
+%solve_cell(5,6,'blue').
+%solve_cell(5,7,'green').
+%
+%solve_cell(6,1,'blue').
+%solve_cell(6,2,'blue').
+%solve_cell(6,3,'green').
+%solve_cell(6,4,'blue').
+%solve_cell(6,5,'blue').
+%solve_cell(6,6,'blue').
+%solve_cell(6,7,'green').
+%
+%solve_cell(7,1,'green').
+%solve_cell(7,2,'blue').
+%solve_cell(7,3,'green').
+%solve_cell(7,4,'blue').
+%solve_cell(7,5,'green').
+%solve_cell(7,6,'blue').
+%solve_cell(7,7,'green').
 
 %Masa
 %in every cell check if you are either in the last colomn or row,
@@ -162,6 +161,7 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
 %    - if visited => skip the cell.
 %    - if not visited => add the cell to the current result list (Acc)
 %      and repeat the same algorithm for this cell.
+
 all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
     nearby_cells(I,J,Cells),
     remove_empty_lists(Cells,FilteredCells),
@@ -171,11 +171,14 @@ all_nearby_cells(I,J, Acc, NewVisited, UpdatedAcc) :-
     NewVisited = [ (I, J) | Acc].
 
 all_nearby_cells(I, J, AllCells) :-
-    % if the passed cell was fixed cell of number 1,
-    % then the result is the passed cell only.
-    fxd_cell(I,J,1) -> AllCells = [(I,J)] ;
-    all_nearby_cells(I, J, [], [(I, J)], AllCells).
-
+    % if the cell not connected to any other add it and stop
+    (nearby_cells(I, J, Cells),
+     remove_empty_lists(Cells, FilteredCells),
+      FilteredCells == [] ->
+        AllCells = [(I, J)]
+    ;
+        all_nearby_cells(I, J, [], [(I, J)], AllCells)
+    ).
 add_element((X, Y), List, [(X,Y) | List]).
 
 
@@ -209,9 +212,6 @@ one_fixed_cell_in_island:- true.
 
 % hamza - start
 
-
-island_number_equals_size :-
-    find_cells_with_numbers().
 
 island_number_equals_size :-
     find_cells_with_numbers().
@@ -282,20 +282,17 @@ expand_sea([(I1,J1) |_]):-
 
 :- dynamic sea_expansion/0.
 
-sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
-    sea_expansion_helper(List),!.
-
-
+    sea_expansion_helper(List).
+sea_expansion.
 
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
     nearby_cells(I,J,Cells),
-    grid_size(X,Y),
     remove_empty_lists(Cells,FilteredCells),
     (FilteredCells == [] -> (
-    nearby_empty_cells(I,J,X,Y,EmptyCells),
+    nearby_empty_cells(I,J,7,7,EmptyCells),
     remove_empty_lists(EmptyCells,FilteredEmptyCells),
     length(FilteredEmptyCells, N),
     (N == 1 ->
@@ -328,8 +325,9 @@ put_sea_around_ones :-
     assert_sea(I1,J),
     assert_sea(I,J2),
     assert_sea(I2,J),
-    % to backtrack
-    fail.
+    % to backtrack,
+       fail.
+
 put_sea_around_ones:- true.
 
 % To remove cells that are out of board
@@ -371,7 +369,7 @@ put_sea_between_cells_seperated_by_one :-
     (   fxd_cell(I4, J, _) -> assert_sea(I2,J) ; true),
     % to backtrack
     fail.
-put_sea_between_cells_seperated_by_one:-   true.
+put_sea_between_cells_seperated_by_one:- true.
 
 
 nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
@@ -414,7 +412,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
         (retractall(solve_cell(X, Y1, _)),
          asserta(solve_cell(X, Y1, 'blue')),
          retractall(solve_cell(X1, Y, _)),
-         asserta(solve_cell(X1, Y, 'blue'))) , print_grid()
+        asserta(solve_cell(X1, Y, 'blue')))
     ; true). % Do nothing if the adjacent cell is not fixed .
 
 % Diagonally adjacent clues - end (hamza) .
@@ -422,40 +420,54 @@ mark_adjacent_cell(X, Y, DX, DY) :-
 
 % Surrounded square - start (hamza) :
 
-    is_empty_cell(X, Y) :-
+   is_empty_cell(X, Y) :-
    \+ solve_cell(X, Y,_),
     \+ fxd_cell(X, Y, _).
-surrounded_square1(X,_) :- grid_size(N,_) , X == N , ! .
 
-surrounded_square1(X,Y):-  processing(X,Y),
-    X1= X+1,
-    surrounded_square1(X1,Y).
+surrounded_square() :-
+    grid_size(GridX, GridY),  % Get the grid size
+    X = 1,
+    Y = 1,
+    surrounded_square1(X, Y, GridX, GridY). % Pass grid size as arguments
 
-surrounded_square():-
-    X = 1 , Y = 1,
-    surrounded_square1(X,Y).
+surrounded_square1(X, _, GridX, _) :-
+    X > GridX,  % Base case: Reached the end of the row
+    !.
 
-% is func do like a for(loop) on Rows .
+surrounded_square1(X, Y, GridX, GridY) :-
+    processing(X, Y, GridX, GridY),
+    X1 is X + 1,
+    surrounded_square1(X1, Y, GridX, GridY).
 
-processing(_,Y):- grid_size(_,M) ,Y == M , ! .
+processing(_, Y, _, GridY) :-
+    Y > GridY, % Base case: Reached the end of the column
+    !.
 
-% is fonc do like afor(loop) on columns and called check for every cell
-processing(X,Y) :-
-        check(X,Y),
-        Y1= Y+1,
-       processing(X,Y1).
+processing(X, Y, GridX, GridY) :-
+        check(X, Y),
+        Y1 is Y + 1,
+        processing(X, Y1, GridX, GridY).
 
-check(X,Y):-
-    (   is_empty_cell(X,Y),
-        X1 is X - 1,
-        solve_cell(X1,Y,b),
-        Y2 is Y + 1 ,
-        solve_cell(X,Y2,b),
-        Y1 is Y - 1 ,
-        solve_cell(X,Y1,b),
-        X2 is X + 1,
-        solve_cell(X2,Y,b) )
-    -> asserta(solve_cell(X,Y,'blue')) , print_grid() ; true .
+check(X, Y) :-
+    (   is_empty_cell(X, Y),
+       is_surrounded_by_sea(X, Y)
+    )
+    -> asserta(solve_cell(X, Y, 'blue')); true.
+
+is_surrounded_by_sea(X, Y) :-
+    grid_size(GridX, GridY),
+    (   (X1 is X - 1, X1 >= 1, solve_cell(X1, Y, blue))
+    ;   (X1 is X - 1, X1 < 1, true)
+    ),
+    (   (X2 is X + 1, X2 =< GridX, solve_cell(X2, Y, blue))
+    ;   (X2 is X + 1, X2 > GridX, true)
+    ),
+    (   (Y1 is Y - 1, Y1 >= 1, solve_cell(X, Y1, blue))
+    ;   (Y1 is Y - 1, Y1 < 1, true)
+    ),
+    (   (Y2 is Y + 1, Y2 =< GridY, solve_cell(X, Y2, blue))
+    ;   (Y2 is Y + 1, Y2 > GridY, true)
+    ).
 
  % Surrounded square - end (hamza) .
 
@@ -473,7 +485,7 @@ get_alone_cell(I,J):-
     \+ fxd_cell(I,J,_),
     all_nearby_cells(I,J, List),
     length(List, Length),
-    Length =:= 0.
+    Length =:= 1.
 
 % get fixed island value of this island
  get_fxd_island_value(I, J, Value, Length):-
@@ -503,7 +515,6 @@ island_continuity_diagonal([A,B,C,D], X, Y, X1, X2, Y1, Y2):-
             ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true).
 
 island_continuity :-
-    print_grid,
     get_alone_cell(I,J),
     I1 is I - 1,
     I2 is I + 1,
@@ -519,10 +530,8 @@ island_continuity :-
     (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
-    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true),
-    nl,
-    print_grid.
-
+    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
+island_continuity :- true.
 %SARA
 %new print method
 grid_size(7,7).
@@ -568,8 +577,7 @@ diagonal_cell_is_sea(I,J,I1,I2,J1,J2):-
     (\+solve_cell(I1,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I2,J,_)-> assert_sea(I1,J1);
    \+solve_cell(I1,J,_),\+solve_cell(I,J2,_),solve_cell(I,J1,_),solve_cell(I2,J,_)-> assert_sea(I1,J2);
    \+solve_cell(I,J2,_),\+solve_cell(I2,J,_),solve_cell(I1,J,_),solve_cell(I,J1,_)-> assert_sea(I2,J2);
-   \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)),
-   print_grid.
+   \+solve_cell(I2,J,_),\+solve_cell(I,J1,_),solve_cell(I,J2,_),solve_cell(I1,J,_)-> assert_sea(I2,J1)).
 
 %filling the empty adjacents with sea
 fill_adjacents(I,J,Row,Col) :-
@@ -580,8 +588,7 @@ fill_adjacents(I,J,Row,Col) :-
     (I1 > 0, I1 =< Row, \+solve_cell(I1, J, _) ->  assert_sea(I1,J) ; true),
     (I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) ->  assert_sea(I2,J) ; true),
     (J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) ->  assert_sea(I,J1) ; true),
-    (J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) ->  assert_sea(I,J2) ; true),
-    print_grid,nl,nl.
+    (J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) ->  assert_sea(I,J2) ; true).
 
 % this function checks if an island is completed by comparing the number
 % of its cells with the value of the fixed cell, if its completed then
@@ -597,10 +604,11 @@ fill_adjacents_helper([(I,J) | T]):-
     fill_adjacents(I,J,7,7),
     fill_adjacents_helper(T).
 %tha main function, get all fixed cells and give them to "surrounding_a_complete_island" function
+
 sea_around_island :-
     findall((I,J,Value),fxd_cell(I,J,Value),FixedCells),
     surrounding_a_complete_island(FixedCells).
-
+sea_around_island.
 
 % startegy 4 is : if a cell was surrounded by three sea , the fourth
 % will be land
@@ -631,7 +639,7 @@ begin_strategy_4(I, J) :-
     return_color(I, J1, C3),cnt_blue(C3, R3),
     return_color(I, J2, C4),cnt_blue(C4, R4),
     Total is R1 + R2 + R3 + R4,
-    format('Checking cell (~w, ~w): C1 = ~w, C2 = ~w, C3 = ~w, C4 = ~w, Total = ~w~n', [I, J, C1, C2, C3, C4, Total]),
+
     Total == 3,
     (
       ( C1 \= 'blue', assert_land(I1, J));
@@ -645,7 +653,6 @@ begin_strategy_4(_,_).
 do1:-
     fxd_cell(I, J, _),
     begin_strategy_4(I, J).
-
 do2:-
     solve_cell(N,M,'green'),
     begin_strategy_4(N,M),
@@ -724,12 +731,13 @@ give_cell_should_become_sea(_, (-1, -1)).
 wall_continuity_helper((I,J)):- assert_sea(I,J).
 
 wall_continuity:-
+    print_grid,
     solve_cell(I,J,blue),
     all_nearby_cells(I,J,List),
     give_cell_should_become_sea(List,S),
     (S \= (-1, -1) ->
         wall_continuity_helper(S)).
-wall_continuity:-true.
+wall_continuity:- true.
 
 
 
@@ -748,31 +756,76 @@ check_from_distance(I, J) :-
             abs(I3, I4),
             abs(J3, J4),
             D is I4 + J4,
-           (D >= Value, ! ; false)
+            (D >= Value, ! ; false)
         )
-    ),
-    !. check_from_distance(_, _) :-
-    false. unreachable_square_helper(I, J, N, M) :-
-        (
-        \+ solve_cell(I, J, _),
-                      check_from_distance(I, J)
-    ) ->
-        assert_sea(I, J)
-    ;
-        I1 is I + 1,
-    J1 is J + 1,
-    (   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
-    (   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
+    ),!.
+check_from_distance(_, _) :- false.
+
+unreachable_square_helper(I, J, N, M) :-
+    (
+    \+ solve_cell(I, J, _),
+    check_from_distance(I, J)
+) ->
+    assert_sea(I, J)
+;
+I1 is I + 1,
+J1 is J + 1,
+(   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
+(   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
 
 
 unreachable_square:-
-    print_grid,
     grid_size(N,M),
-    unreachable_square_helper(1,1, N, M),
-    nl,
-    print_grid.
+    unreachable_square_helper(1,1, N, M).
 
 
+
+solve :-
+print('put sea around ones'),
+nl,
+put_sea_around_ones,
+print_grid(),
+print('put sea between cells seperated by one'),
+nl,
+put_sea_between_cells_seperated_by_one,
+print_grid(),
+print('diagonally adjacent clues'),
+nl,
+diagonally_adjacent_clues,
+print_grid(),
+%print('surrounded square'),
+%nl,
+%surrounded_square,
+%print_grid(),
+print('sea expansion'),
+nl,
+sea_expansion,
+print_grid(),
+print('island expansion from a clue'),
+nl,
+island_expansion_from_a_clue,
+print_grid(),
+%expandable_only_in_two_directions(I,J),
+print('island continuity'),
+nl,
+island_continuity,
+print_grid(),
+print('sea around island'),
+nl,
+sea_around_island,
+print_grid(),
+print('avoiding wall area of 2 by 2'),
+nl,
+avoiding_wall_area_of_2by2,
+print_grid(),
+print('unreachable square'),
+nl,
+unreachable_square,
+print_grid(),
+print('wall continuity'),
+nl,
+wall_continuity,
+print_grid().
 
 
 
