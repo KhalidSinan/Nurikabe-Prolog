@@ -15,68 +15,65 @@ fxd_cell(7,1,1).
 fxd_cell(7,5,1).
 fxd_cell(7,7,6).
 
-
-
-
 % solve_cell()
 :- dynamic solve_cell/3.
-%solve_cell(1,1,'blue').
+solve_cell(1,1,'blue').
 solve_cell(1,2,'green').
 solve_cell(1,3,'green').
 solve_cell(1,4,'green').
-%solve_cell(1,5,'blue').
+solve_cell(1,5,'blue').
 solve_cell(1,6,'green').
-%solve_cell(1,7,'blue').
+solve_cell(1,7,'blue').
 
 
-%solve_cell(2,1,'blue').
-%solve_cell(2,2,'blue').
-%solve_cell(2,3,'blue').
-%solve_cell(2,4,'blue').
-%solve_cell(2,5,'blue').
-%solve_cell(2,6,'blue').
-%solve_cell(2,7,'blue').
+solve_cell(2,1,'blue').
+solve_cell(2,2,'blue').
+solve_cell(2,3,'blue').
+solve_cell(2,4,'blue').
+solve_cell(2,5,'blue').
+solve_cell(2,6,'blue').
+solve_cell(2,7,'blue').
 %
-%solve_cell(3,1,'green').
-%solve_cell(3,2,'green').
-%solve_cell(3,3,'blue').
-%solve_cell(3,4,'green').
-%solve_cell(3,5,'blue').
-%solve_cell(3,6,'green').
-%solve_cell(3,7,'green').
+solve_cell(3,1,'green').
+solve_cell(3,2,'green').
+solve_cell(3,3,'blue').
+solve_cell(3,4,'green').
+solve_cell(3,5,'blue').
+solve_cell(3,6,'green').
+solve_cell(3,7,'green').
+
 %
+solve_cell(4,1,'blue').
+solve_cell(4,2,'blue').
+solve_cell(4,3,'blue').
+solve_cell(4,4,'blue').
+solve_cell(4,5,'blue').
+solve_cell(4,6,'blue').
+solve_cell(4,7,'green').
 %
-%solve_cell(4,1,'blue').
-%solve_cell(4,2,'blue').
-%solve_cell(4,3,'blue').
-%solve_cell(4,4,'blue').
-%solve_cell(4,5,'blue').
-%solve_cell(4,6,'blue').
-%solve_cell(4,7,'green').
-%
-%solve_cell(5,1,'blue').
-%solve_cell(5,2,'green').
-%solve_cell(5,3,'blue').
+solve_cell(5,1,'blue').
+solve_cell(5,2,'green').
+solve_cell(5,3,'blue').
 solve_cell(5,4,'green').
 solve_cell(5,5,'green').
-%solve_cell(5,6,'blue').
-%solve_cell(5,7,'green').
+solve_cell(5,6,'blue').
+solve_cell(5,7,'green').
 %
-%solve_cell(6,1,'blue').
+solve_cell(6,1,'blue').
 %solve_cell(6,2,'blue').
-%solve_cell(6,3,'green').
-%solve_cell(6,4,'blue').
-%solve_cell(6,5,'blue').
-%solve_cell(6,6,'blue').
-%solve_cell(6,7,'green').
+solve_cell(6,3,'green').
+solve_cell(6,4,'blue').
+solve_cell(6,5,'blue').
+solve_cell(6,6,'blue').
+solve_cell(6,7,'green').
 %
-%solve_cell(7,1,'green').
-%solve_cell(7,2,'blue').
-%solve_cell(7,3,'green').
-%solve_cell(7,4,'blue').
-%solve_cell(7,5,'green').
-%solve_cell(7,6,'blue').
-%solve_cell(7,7,'green').
+solve_cell(7,1,'green').
+solve_cell(7,2,'blue').
+solve_cell(7,3,'green').
+solve_cell(7,4,'blue').
+solve_cell(7,5,'green').
+solve_cell(7,6,'blue').
+solve_cell(7,7,'green').
 
 %Masa
 %in every cell check if you are either in the last colomn or row,
@@ -280,12 +277,11 @@ one_sea:-
 expand_sea([(I1,J1) |_]):-
     assert_sea(I1,J1).
 
-:- dynamic sea_expansion/0.
 
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
     sea_expansion_helper(List).
-sea_expansion.
+sea_expansion:- true.
 
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
@@ -689,14 +685,15 @@ avoiding_wall_area_of_2by2:-
     between(1,M1,J),
     check_four_around_one(I,J),
     fail.
-avoiding_wall_area_of_2by2.
+avoiding_wall_area_of_2by2:- true.
 
 % Wall Continuity (Tima)
 
 
 return_cell_from_nearby_can_become_sea(List, (X,Y)) :-
-    member((X,Y), List),
-    (  \+ solve_cell(X,Y,_) , !).
+    member((X, Y), List),
+    (   \+solve_cell(X, Y, _), !).
+
 return_cell_from_nearby_can_become_sea(_, (-1, -1)).
 
 nearby_of_list_of_neighBors_helper(I, J, [H1, H2, H3, H4]) :-
@@ -717,13 +714,24 @@ nearby_of_list_of_neighBors([], _).
 nearby_of_list_of_neighBors([(I,J)|T], S):-
     nearby_of_list_of_neighBors_helper(I,J,L),
     remove_empty_lists(L,List),
-    return_cell_from_nearby_can_become_sea(List,S),
+    nearby_empty_cells(I,J,7,7,L2),
+    intersect(List,L2,L3),
+    return_cell_from_nearby_can_become_sea(L3,S),
     (S \= (-1, -1), ! ; nearby_of_list_of_neighBors(T,S)).
+
+intersect([], _, []).
+intersect([H|T], L, IntersectionList) :-
+    member(H, L),
+    !,
+    intersect(T, L, RestIntersectionList),
+    IntersectionList = [H|RestIntersectionList].
+intersect([_|T], L, IntersectionList) :-
+    intersect(T, L, IntersectionList).
 
 
 give_cell_should_become_sea([(I,J)|T], S):-
-    nearby_neighbors_cells(I,J,List),
-    remove_empty_lists(List,List2),
+    nearby_neighbors_cells(I,J,L1),
+    remove_empty_lists(L1,List2),
     nearby_of_list_of_neighBors(List2,S),
     (S \= (-1, -1), ! ; give_cell_should_become_sea(T,S)).
 give_cell_should_become_sea(_, (-1, -1)).
@@ -736,9 +744,8 @@ wall_continuity:-
     all_nearby_cells(I,J,List),
     give_cell_should_become_sea(List,S),
     (S \= (-1, -1) ->
-        wall_continuity_helper(S)).
+        wall_continuity_helper(S); true), !.
 wall_continuity:- true.
-
 
 
 solved :-
@@ -768,67 +775,93 @@ unreachable_square_helper(I, J, N, M) :-
 ) ->
     assert_sea(I, J)
 ;
-I1 is I + 1,
-J1 is J + 1,
-(   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
-(   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
+I1 is I - 1,
+J1 is J - 1,
+(   I1 > 0, unreachable_square_helper(I1, J, N, M) ; true),
+(   J1 > 0 , unreachable_square_helper(I, J1, N, M) ; true).
 
 
 unreachable_square:-
     grid_size(N,M),
-    unreachable_square_helper(1,1, N, M).
-
+    unreachable_square_helper(N,M, N, M).
 
 
 solve :-
-print('put sea around ones'),
-nl,
-put_sea_around_ones,
-print_grid(),
-print('put sea between cells seperated by one'),
-nl,
-put_sea_between_cells_seperated_by_one,
-print_grid(),
-print('diagonally adjacent clues'),
-nl,
-diagonally_adjacent_clues,
-print_grid(),
-%print('surrounded square'),
-%nl,
-%surrounded_square,
-%print_grid(),
-print('sea expansion'),
-nl,
-sea_expansion,
-print_grid(),
-print('island expansion from a clue'),
-nl,
-island_expansion_from_a_clue,
-print_grid(),
-%expandable_only_in_two_directions(I,J),
-print('island continuity'),
-nl,
-island_continuity,
-print_grid(),
-print('sea around island'),
-nl,
-sea_around_island,
-print_grid(),
-print('avoiding wall area of 2 by 2'),
-nl,
-avoiding_wall_area_of_2by2,
-print_grid(),
-print('unreachable square'),
-nl,
-unreachable_square,
-print_grid(),
-print('wall continuity'),
-nl,
-wall_continuity,
-print_grid().
+
+    print('unreachable square'),
+    nl,
+    nl,
+    unreachable_square,
+    print_grid,
 
 
+    print('put sea around ones'),
+    nl,
+    nl,
+    put_sea_around_ones,
+    print_grid,
 
+    print('put sea between cells seperated by one'),
+    nl,
+    nl,
+    put_sea_between_cells_seperated_by_one,
+    print_grid,
+
+
+    print('diagonally adjacent clues'),
+    nl,
+    nl,
+    diagonally_adjacent_clues,
+    print_grid,
+
+    print('avoiding wall area of 2 by 2'),
+    nl,
+    nl,
+    avoiding_wall_area_of_2by2,
+    print_grid,
+
+    print('surrounded square'),
+    nl,
+    nl,
+    surrounded_square,
+    print_grid,
+
+    print('sea expansion'),
+    nl,
+    nl,
+    sea_expansion,
+    print_grid,
+
+    % here two directions
+    %print('expandable only in two directions'),
+    %nl,
+    %island_expansion_from_a_clue,
+    %print_grid,
+
+
+    print('island expansion from a clue'),
+    nl,
+    nl,
+    island_expansion_from_a_clue,
+    print_grid,
+
+    print('island continuity'),
+    nl,
+    nl,
+    island_continuity,
+    print_grid,
+
+    print('sea around island'),
+    nl,
+    nl,
+    sea_around_island,
+    print_grid,
+
+    print('wall continuity'),
+    nl,
+    nl,
+    wall_continuity,
+    print_grid.
 
 
 
