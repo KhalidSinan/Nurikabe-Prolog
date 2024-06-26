@@ -153,8 +153,6 @@ iterate_and_add([(I,J)|T], Visited, Acc, Result) :-
         all_nearby_cells(I, J, NewAcc, NewVisited, UpdatedAcc),
         iterate_and_add(T, NewVisited, UpdatedAcc, Result)
     ).
-
-
 % return list of cells that form an island or a sea.
 % 1- get the adjacent cells for the current cell. => ex: [(1,3),[],(2,3),[]]
 % 2- remove the empty lists from the adjacent cells list (Cells) ex: [(1,3),(2,3)].
@@ -287,8 +285,6 @@ sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
     sea_expansion_helper(List),!.
-
-
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
     nearby_cells(I,J,Cells),
@@ -412,7 +408,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
         (retractall(solve_cell(X, Y1, _)),
          asserta(solve_cell(X, Y1, 'blue')),
          retractall(solve_cell(X1, Y, _)),
-         asserta(solve_cell(X1, Y, 'blue')))
+         asserta(solve_cell(X1, Y, 'blue'))) , print_grid()
     ; true). % Do nothing if the adjacent cell is not fixed .
 
 % Diagonally adjacent clues - end (hamza) .
@@ -433,12 +429,6 @@ surrounded_square1(X,_) :- grid_size(N,_) , X == N , ! .
 surrounded_square1(X,Y):-  processing(X,Y),
     X1= X+1,
     surrounded_square1(X1,Y).
-
-<<<<<<< HEAD
-processing(_,Y):- grid_size(_,M) ,Y == M , ! .
-
-processing(X,Y) :- check(X,Y),
-=======
 % is func do like a for(loop) on Rows .
 surrounded_square:- X=1 , Y=1 ,
     processing(X,Y),
@@ -450,7 +440,6 @@ processing(_,Y):- grid_size(_,M) ,Y == M , ! .
 % is fonc do like afor(loop) on columns and called check for every cell
 processing(X,Y) :-
         check(X,Y),
->>>>>>> main
         Y1= Y+1,
        processing(X,Y1).
 
@@ -464,7 +453,7 @@ check(X,Y):-
         solve_cell(X,Y1,b),
         X2 is X + 1,
         solve_cell(X2,Y,b) )
-    -> asserta(solve_cell(X,Y,'blue')) ; true .
+    -> asserta(solve_cell(X,Y,'blue')) , print_grid() ; true .
 
  % Surrounded square - end (hamza) .
 
@@ -551,7 +540,6 @@ restart:-
     solve_cell(X, Y, Color),
     retract(solve_cell(X, Y, Color)),
     restart.
-
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
 expandable_only_in_two_directions(I,J):-
