@@ -211,7 +211,8 @@ one_fixed_cell_in_island:- true.
 % hamza - start
 
 
-% in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function
+island_number_equals_size :-
+    find_cells_with_numbers().
 
 island_number_equals_size :-
     find_cells_with_numbers().
@@ -221,15 +222,11 @@ find_cells_with_numbers() :-
      walk_on_cells_with_number(List).
 
 
-% in this function i will walk on every cells in list and send cell to other function
-% " in short this func its work like a for loop  "
-
 walk_on_cells_with_number([]).
 walk_on_cells_with_number([(X,Y,Value)|Tail]) :-
  count_of_nearby_cells(X,Y,Value),
     walk_on_cells_with_number(Tail).
 
-% in this function i will call func(all_nearby_cells) which return the list is have nearby of cell  then i  will calculate length of this list then test condition " if the length of list equal the number in cell "
 
 count_of_nearby_cells(X,Y,Value) :-
     all_nearby_cells(X,Y,Result), length(Result, Length) , Length =:= Value .
@@ -395,25 +392,19 @@ nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
 
 % Diagonally adjacent clues - start (hamza) :
 
-% in this function i will get all the cells which contain number through (findall) and save cells in list then send the list to other function .
+diagonally_adjacent_clues() :- find_cells_with_number().
+
 find_cells_with_number() :-
     findall((X,Y,Value), fxd_cell(X,Y,Value), List),
-    walk_on_cells(List).
 
-% in this function i will walk on every cells in list and send cell to other function
-% " in short this func its work like a for loop  " .
 walk_on_cells([]).
 walk_on_cells([(X,Y,_)|Tail]) :-
     mark_adjacent_cell(X, Y, 1, 1), % Check Right-Down
     mark_adjacent_cell(X, Y, -1, 1), % Check Left-Down
     mark_adjacent_cell(X, Y, -1, -1), % Check Left-Up
     mark_adjacent_cell(X, Y, 1, -1), % Check Right-Up
-    print_grid(),
     walk_on_cells(Tail).
 
-
-% in this func i will test if the Diagonalcells fxd_cell i will assert
-%  diagonalCell of solved_cell(blue) to this cells .
 mark_adjacent_cell(X, Y, DX, DY) :-
     X1 is X + DX,
     Y1 is Y + DY,
@@ -429,13 +420,25 @@ mark_adjacent_cell(X, Y, DX, DY) :-
 
 % Surrounded square - start (hamza) :
 
- % check if the cell is not solved_cell and not fxd_cell .
-is_empty_cell(X, Y) :-
-    \+ solve_cell(X, Y,_),
+    is_empty_cell(X, Y) :-
+   \+ solve_cell(X, Y,_),
     \+ fxd_cell(X, Y, _).
 
-surrounded_square(X,_) :- grid_size(N,_) , X == N , ! .
+surrounded_square():-
+    X = 1 , Y = 1,
+    surronded_square1(X,Y).
 
+surrounded_square1(X,_) :- grid_size(N,_) , X == N , ! .
+
+surrounded_square1(X,Y):-  processing(X,Y),
+    X1= X+1,
+    surrounded_square1(X1,Y).
+
+<<<<<<< HEAD
+processing(_,Y):- grid_size(_,M) ,Y == M , ! .
+
+processing(X,Y) :- check(X,Y),
+=======
 % is func do like a for(loop) on Rows .
 surrounded_square:- X=1 , Y=1 ,
     processing(X,Y),
@@ -447,11 +450,10 @@ processing(_,Y):- grid_size(_,M) ,Y == M , ! .
 % is fonc do like afor(loop) on columns and called check for every cell
 processing(X,Y) :-
         check(X,Y),
+>>>>>>> main
         Y1= Y+1,
-        processing(X,Y1).
+       processing(X,Y1).
 
-% if the cell is empty and is surrounded by sea horizontally and
-% vertically I will assert this cell as solve_cell(blue) .
 check(X,Y):-
     (   is_empty_cell(X,Y),
         X1 is X - 1,
