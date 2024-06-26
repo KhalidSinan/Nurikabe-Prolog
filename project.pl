@@ -218,9 +218,6 @@ one_fixed_cell_in_island:- true.
 island_number_equals_size :-
     find_cells_with_numbers().
 
-island_number_equals_size :-
-    find_cells_with_numbers().
-
 find_cells_with_numbers() :-
     findall((X,Y,Value),fxd_cell(X,Y,Value), List),
      walk_on_cells_with_number(List).
@@ -287,18 +284,16 @@ expand_sea([(I1,J1) |_]):-
 
 :- dynamic sea_expansion/0.
 
-sea_expansion.
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
-    sea_expansion_helper(List),!. 
+    sea_expansion_helper(List). 
 
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
     nearby_cells(I,J,Cells),
-    grid_size(X,Y),
     remove_empty_lists(Cells,FilteredCells),
     (FilteredCells == [] -> (
-    nearby_empty_cells(I,J,X,Y,EmptyCells),
+    nearby_empty_cells(I,J,7,7,EmptyCells),
     remove_empty_lists(EmptyCells,FilteredEmptyCells),
     length(FilteredEmptyCells, N),
     (N == 1 ->
@@ -306,6 +301,7 @@ sea_expansion_helper([(I,J) | T]) :-
     ; sea_expansion_helper(T))
     )
     ; sea_expansion_helper(T)).
+sea_expansion.
 
 
 
@@ -320,7 +316,6 @@ assert_sea(I,J):-
 % Put Sea Around Ones
 put_sea_around_ones :-
     % Get Fixed Cell that has value of 1
-    print_grid,
     fxd_cell(I, J, 1),
     % get the nearby cells
     I1 is I - 1,
@@ -335,7 +330,7 @@ put_sea_around_ones :-
     % to backtrack,
        fail.
 
-put_sea_around_ones:- nl,print_grid, true.
+put_sea_around_ones:- true.
 
 % To remove cells that are out of board
 remove_cells_out_of_board:-
@@ -357,7 +352,6 @@ get_fxd_cells(List):-
 
 % Put Sea Between Cells Seperated By One
 put_sea_between_cells_seperated_by_one :-
-    print_grid,
     % Get Random Fixed Cell
     fxd_cell(I, J, _),
     % get the nearby cells
@@ -377,7 +371,7 @@ put_sea_between_cells_seperated_by_one :-
     (   fxd_cell(I4, J, _) -> assert_sea(I2,J) ; true),
     % to backtrack
     fail.
-put_sea_between_cells_seperated_by_one:- nl,print_grid, true.
+put_sea_between_cells_seperated_by_one:- true.
 
 
 nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
@@ -428,50 +422,54 @@ mark_adjacent_cell(X, Y, DX, DY) :-
 
 % Surrounded square - start (hamza) :
 
-    is_empty_cell(X, Y) :-
-    \+ solve_cell(X, Y,_),
+   is_empty_cell(X, Y) :-
+   \+ solve_cell(X, Y,_),
     \+ fxd_cell(X, Y, _).
-surrounded_square1(X,_) :- grid_size(N,_) , X == N , ! .
 
-surrounded_square1(X,Y):-  processing(X,Y),
-    X1 is X+1,
-    surrounded_square1(X1,Y).
+surrounded_square() :-
+    grid_size(GridX, GridY),  % Get the grid size
+    X = 1,
+    Y = 1,
+    surrounded_square1(X, Y, GridX, GridY). % Pass grid size as arguments
 
-surrounded_square():-
-    X = 1 , Y = 1,
-    surrounded_square1(X,Y).
+surrounded_square1(X, _, GridX, _) :-
+    X > GridX,  % Base case: Reached the end of the row
+    !.
 
-% is func do like a for(loop) on Rows .
+surrounded_square1(X, Y, GridX, GridY) :-
+    processing(X, Y, GridX, GridY),
+    X1 is X + 1,
+    surrounded_square1(X1, Y, GridX, GridY).
 
-processing(_,Y):- grid_size(_,M) ,Y == M , ! .
+processing(_, Y, _, GridY) :-
+    Y > GridY, % Base case: Reached the end of the column
+    !.
 
-% is fonc do like afor(loop) on columns and called check for every cell
-processing(X,Y) :-
-        check(X,Y),
-        Y1= Y+1,
-       processing(X,Y1).
+processing(X, Y, GridX, GridY) :-
+        check(X, Y),
+        Y1 is Y + 1,
+        processing(X, Y1, GridX, GridY).
 
 check(X, Y) :-
     (   is_empty_cell(X, Y),
-        is_surrounded_by_sea(X, Y)
+       is_surrounded_by_sea(X, Y)
     )
-    -> assert_sea(X, Y) ; true.
+    -> asserta(solve_cell(X, Y, 'blue')); true.
 
 is_surrounded_by_sea(X, Y) :-
     grid_size(GridX, GridY),
-    (  (X1 is X - 1, X1 >= 1, solve_cell(X1, Y, 'blue'))  % Left cell (within grid)
-    ;  (X1 is X - 1, X1 < 1, true)                   % Left cell (outside grid)
+    (   (X1 is X - 1, X1 >= 1, solve_cell(X1, Y, blue))  
+    ;   (X1 is X - 1, X1 < 1, true)                  
     ),
-    (  (X2 is X + 1, X2 =< GridX, solve_cell(X2, Y, 'blue'))  % Right cell (within grid)
-    ;  (X2 is X + 1, X2 > GridX, true)                  % Right cell (outside grid)
+    (   (X2 is X + 1, X2 =< GridX, solve_cell(X2, Y, blue)) 
+    ;   (X2 is X + 1, X2 > GridX, true)                    
     ),
-    (  (Y1 is Y - 1, Y1 >= 1, solve_cell(X, Y1, 'blue'))  % Top cell (within grid)
-    ;  (Y1 is Y - 1, Y1 < 1, true)                   % Top cell (outside grid)
+    (   (Y1 is Y - 1, Y1 >= 1, solve_cell(X, Y1, blue))
+    ;   (Y1 is Y - 1, Y1 < 1, true)               
     ),
-    (  (Y2 is Y + 1, Y2 =< GridY, solve_cell(X, Y2, 'blue'))  % Bottom cell (within grid)
-    ;  (Y2 is Y + 1, Y2 > GridY, true)                  % Bottom cell (outside grid)
+    (   (Y2 is Y + 1, Y2 =< GridY, solve_cell(X, Y2, blue))
+    ;   (Y2 is Y + 1, Y2 > GridY, true)                 
     ).
-
 
  % Surrounded square - end (hamza) .
 
@@ -534,15 +532,8 @@ island_continuity :-
     (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
-<<<<<<< Updated upstream
-    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true),
-    nl,
-    print_grid.
-island_continuity :- true.
-=======
     (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
-
->>>>>>> Stashed changes
+island_continuity :- true.
 %SARA
 %new print method
 grid_size(7,7).
@@ -621,10 +612,11 @@ fill_adjacents_helper([(I,J) | T]):-
     fill_adjacents(I,J,7,7),
     fill_adjacents_helper(T).
 %tha main function, get all fixed cells and give them to "surrounding_a_complete_island" function
+
 sea_around_island :-
     findall((I,J,Value),fxd_cell(I,J,Value),FixedCells),
     surrounding_a_complete_island(FixedCells).
-
+sea_around_island.
 
 % startegy 4 is : if a cell was surrounded by three sea , the fourth
 % will be land
@@ -749,13 +741,7 @@ wall_continuity:-
     all_nearby_cells(I,J,List),
     give_cell_should_become_sea(List,S),
     (S \= (-1, -1) ->
-<<<<<<< Updated upstream
-        wall_continuity_helper(S)),
-    nl,print_grid.
-
-=======
         wall_continuity_helper(S)).
->>>>>>> Stashed changes
 wall_continuity:- true.
 
 
@@ -777,19 +763,20 @@ check_from_distance(I, J) :-
             D is I4 + J4,
             (D >= Value, ! ; false)
         )
-    ),
-    !. check_from_distance(_, _) :-
-    false. unreachable_square_helper(I, J, N, M) :-
-        (
-        \+ solve_cell(I, J, _),
-        check_from_distance(I, J)
-    ) ->
-        assert_sea(I, J)
-    ;
-        I1 is I + 1,
-    J1 is J + 1,
-    (   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
-    (   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
+    ),!.
+check_from_distance(_, _) :- false.
+
+unreachable_square_helper(I, J, N, M) :-
+    (
+    \+ solve_cell(I, J, _),
+    check_from_distance(I, J)
+) ->
+    assert_sea(I, J)
+;
+I1 is I + 1,
+J1 is J + 1,
+(   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
+(   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
 
 
 unreachable_square:-
@@ -811,35 +798,39 @@ print('diagonally adjacent clues'),
 nl,
 diagonally_adjacent_clues,
 print_grid(),
-print('surrounded square'),
-nl,
-surrounded_square,
-print_grid(),
+%print('surrounded square'),
+%nl,
+%surrounded_square,
+%print_grid(),
 print('sea expansion'),
 nl,
 sea_expansion,
 print_grid(),
-%print('wall continuity'),
-%nl,
-%wall_continuity,
-%print_grid(),
 print('island expansion from a clue'),
 nl,
 island_expansion_from_a_clue,
+print_grid(),
 %expandable_only_in_two_directions(I,J),
 print('island continuity'),
 nl,
-island_continuity.
+island_continuity,
+print_grid(),
+print('sea around island'),
+nl,
+sea_around_island,
+print_grid(),
+print('avoiding wall area of 2 by 2'),
+nl,
+avoiding_wall_area_of_2by2,
+print_grid(),
+print('unreachable square'),
+nl,
+unreachable_square,
+print_grid(),
+print('wall continuity'),
+nl,
+wall_continuity,
 print_grid().
-%print('sea around island'),
-%nl,
-%sea_around_island,
-%print('avoiding wall area of 2 by 2'),
-%nl,
-%avoiding_wall_area_of_2by2,
-%print('unreachable square'),
-%nl,
-%unreachable_square.
 
 
 
