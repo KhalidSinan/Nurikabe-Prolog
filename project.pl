@@ -477,6 +477,7 @@ assert_land(I,J):-
     (\+ solve_cell(I,J,'green') -> asserta(solve_cell(I,J,'green')) ; true).
 
 
+
 % get a cell that is green and isnt connected to any island
 get_alone_cell(I,J):-
     solve_cell(I,J, 'green'),
@@ -494,25 +495,26 @@ get_alone_cell(I,J):-
 
 % Island Continuity
 island_continuity_helper(I,J):-
-    get_fxd_island_value(I, J, Value, Length),
-    Value > Length.
+        get_fxd_island_value(I, J, Value, Length),
+        Value > Length + 1.
 
 island_continuity_diagonal([A,B,C,D], X, Y, X1, X2, Y1, Y2):-
-     (   island_continuity_helper(I, J) ->
+    (  A \= [], A = (I,J),  island_continuity_helper(I, J) ->
             (   \+ solve_cell(X, Y2, _) ->  assert_land(X, Y2)
             ;   \+ solve_cell(X2, Y, _) -> assert_land(X2, Y) ;   true              );   true),
-     (   island_continuity_helper(I, J) ->
+     (  B \= [],  B = (I,J), island_continuity_helper(I, J) ->
             (   \+ solve_cell(X, Y1, _) ->  assert_land(X, Y1)
             ;   \+ solve_cell(X2, Y, _) -> assert_land(X2, Y) ;   true              );   true),
-     (   island_continuity_helper(I, J) ->
+     (  C \= [], C = (I,J), island_continuity_helper(I, J) ->
             (   \+ solve_cell(X, Y1, _) ->  assert_land(X, Y1)
             ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true),
-    (   island_continuity_helper(I, J) ->
+
+     (  D \= [], D = (I,J), island_continuity_helper(I, J) ->
             (   \+ solve_cell(X, Y2, _) ->  assert_land(X, Y2)
             ;   \+ solve_cell(X1, Y, _) -> assert_land(X1, Y) ;   true              );   true).
 
-
 island_continuity :-
+    print_grid,
     get_alone_cell(I,J),
     I1 is I - 1,
     I2 is I + 1,
@@ -528,8 +530,9 @@ island_continuity :-
     (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
-    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
-
+    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true),
+    nl,
+    print_grid.
 
 %SARA
 %new print method
@@ -708,3 +711,45 @@ solved :-
     no_2_by_2_sea,
     one_fixed_cell_in_island,
     island_number_equals_size.
+
+
+check_from_distance(I, J) :-
+    % Loop through all fxd_cells
+    forall(fxd_cell(I2, J2, Value),
+        (
+            % Calculate distance:
+            I3 is I2 - I,
+            J3 is J2 - J,
+            abs(I3, I4),
+            abs(J3, J4),
+            D is I4 + J4,
+            % Check if the distance is less than or equal to the value:
+            (D >= Value, ! ; false)
+        )
+    ),
+    !. % Cut to prevent further backtracking
+check_from_distance(_, _) :-
+    false. % If any check fails, return false
+
+unreachable_square_helper(I, J, N, M) :-
+    % For debugging
+    (
+        \+ solve_cell(I, J, _),
+                      check_from_distance(I, J)
+    ) ->
+        assert_sea(I, J)
+    ;
+    % Continue to the next cell regardless of previous checks:
+    I1 is I + 1,
+    J1 is J + 1,
+    (   I1 =< N , unreachable_square_helper(I1, J, N, M) ; true),
+    (   J1 =< M , unreachable_square_helper(I, J1, N, M) ; true).
+
+
+unreachable_square:-
+    print_grid,
+    grid_size(N,M),
+    unreachable_square_helper(1,1, N, M),
+    nl,
+    print_grid.
+
