@@ -85,22 +85,20 @@ solve_cell(5,5,'green').
 %   beside-below
 %   if the four cells are blue then its false
 %   otherwise its all true
-no2by2sea(I,_):-
+no2by2sea_helper(I,_):-
     grid_size(N,_),
     I==N,!.
-no2by2sea(_,J):-
+no2by2sea_helper(_,J):-
     grid_size(_,M),
     J == M,
     !.
-no2by2sea(I, J):-
+no2by2sea_helper(I, J):-
     I1 is I + 1,
     J1 is J + 1,
-    solve_cell(I, J, Num),
-    solve_cell(I1, J, Num2),
-    solve_cell(I, J1, Num3),
-    solve_cell(I1, J1, Num4),
-%    format('Checking cells: (~w,~w,~w, ~w, ~w, ~w)~n', [I, J, Num,
-%    Num2, Num3, Num4]),
+    return_color(I, J, Num),
+    return_color(I1, J, Num2),
+    return_color(I, J1, Num3),
+    return_color(I1, J1, Num4),
     \+ (Num == 'blue', Num2 == 'blue', Num3 == 'blue', Num4 == 'blue')
     .
 no_2_by_2_sea:-
@@ -109,7 +107,7 @@ no_2_by_2_sea:-
     M1 is M - 1,
     between(1,N1,I),
     between(1,M1,J),
-    no2by2sea(I,J).
+    no2by2sea_helper(I,J).
 
 
 % get the adjacent cells for specific cell.
@@ -286,7 +284,8 @@ expand_sea([(I1,J1) |_]):-
 
 sea_expansion :-
     findall((I,J), solve_cell(I,J,blue),List),
-    sea_expansion_helper(List). 
+    sea_expansion_helper(List).
+sea_expansion.
 
 sea_expansion_helper([]).
 sea_expansion_helper([(I,J) | T]) :-
@@ -301,7 +300,6 @@ sea_expansion_helper([(I,J) | T]) :-
     ; sea_expansion_helper(T))
     )
     ; sea_expansion_helper(T)).
-sea_expansion.
 
 
 
@@ -414,7 +412,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
         (retractall(solve_cell(X, Y1, _)),
          asserta(solve_cell(X, Y1, 'blue')),
          retractall(solve_cell(X1, Y, _)),
-        asserta(solve_cell(X1, Y, 'blue'))) 
+        asserta(solve_cell(X1, Y, 'blue')))
     ; true). % Do nothing if the adjacent cell is not fixed .
 
 % Diagonally adjacent clues - end (hamza) .
@@ -458,17 +456,17 @@ check(X, Y) :-
 
 is_surrounded_by_sea(X, Y) :-
     grid_size(GridX, GridY),
-    (   (X1 is X - 1, X1 >= 1, solve_cell(X1, Y, blue))  
-    ;   (X1 is X - 1, X1 < 1, true)                  
+    (   (X1 is X - 1, X1 >= 1, solve_cell(X1, Y, blue))
+    ;   (X1 is X - 1, X1 < 1, true)
     ),
-    (   (X2 is X + 1, X2 =< GridX, solve_cell(X2, Y, blue)) 
-    ;   (X2 is X + 1, X2 > GridX, true)                    
+    (   (X2 is X + 1, X2 =< GridX, solve_cell(X2, Y, blue))
+    ;   (X2 is X + 1, X2 > GridX, true)
     ),
     (   (Y1 is Y - 1, Y1 >= 1, solve_cell(X, Y1, blue))
-    ;   (Y1 is Y - 1, Y1 < 1, true)               
+    ;   (Y1 is Y - 1, Y1 < 1, true)
     ),
     (   (Y2 is Y + 1, Y2 =< GridY, solve_cell(X, Y2, blue))
-    ;   (Y2 is Y + 1, Y2 > GridY, true)                 
+    ;   (Y2 is Y + 1, Y2 > GridY, true)
     ).
 
  % Surrounded square - end (hamza) .
@@ -547,23 +545,16 @@ get_col(X):- grid_size(_,M) , between(1,M,Y),
     fail.
 
 
-assert_green_for_fxd_cells :-
-    fxd_cell(I, J, _),
-    assert_land(I, J),
-    fail.
-assert_green_for_fxd_cells :-true.
 %stop when no more cells
-restart1:- \+ solve_cell(_, _, _),assert_green_for_fxd_cells.
+restart:- \+ solve_cell(_, _, _).
 % check if there is a fact exist, retract the fact, recursive call to
 % process the next cell
-restart1:-
+restart:-
     solve_cell(X, Y, Color),
     retract(solve_cell(X, Y, Color)),
     restart.
 
-restart:-
-    restart1,
-    assert_green_for_fxd_cells.
+
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
 expandable_only_in_two_directions(I,J):-
@@ -598,6 +589,7 @@ fill_adjacents(I,J,Row,Col) :-
     (I2 > 0, I2 =< Row, \+solve_cell(I2, J, _) ->  assert_sea(I2,J) ; true),
     (J1 > 0, J1 =< Col, \+solve_cell(I, J1, _) ->  assert_sea(I,J1) ; true),
     (J2 > 0, J2 =< Col, \+solve_cell(I, J2, _) ->  assert_sea(I,J2) ; true).
+
 % this function checks if an island is completed by comparing the number
 % of its cells with the value of the fixed cell, if its completed then
 % give the island cells list to "fill_adjacents_helper" function
@@ -625,6 +617,10 @@ return_color(I,J,E):-
    (I > N ; J > M ; I < 1; J < 1),
    E = 'blue',
    !.
+return_color(I,J,E):-
+    fxd_cell(I,J,_),
+    E = 'blue',
+    !.
 return_color(I, J, E) :-
     (   solve_cell(I, J, X),
         X \= false -> E = X ;   E = 'a'
@@ -643,23 +639,29 @@ begin_strategy_4(I, J) :-
     return_color(I, J1, C3),cnt_blue(C3, R3),
     return_color(I, J2, C4),cnt_blue(C4, R4),
     Total is R1 + R2 + R3 + R4,
-    %format('Checking cells: (~w,~w,~w)~n', [I, J, Total]),
+
     Total == 3,
     (
-      ( C1 \= 'blue', assert_land(I1, J));
-      ( C2 \= 'blue', assert_land(I2, J));
-      ( C3 \= 'blue', assert_land(I, J1));
-      ( C4 \= 'blue', assert_land(I, J2))
+      ( C1 \= 'blue',C1 \= 'green',  assert_land(I1, J));
+      ( C2 \= 'blue',C1 \= 'green',  assert_land(I2, J));
+      ( C3 \= 'blue',C1 \= 'green',  assert_land(I, J1));
+      ( C4 \= 'blue',C1 \= 'green',  assert_land(I, J2))
      ),
     fail.
-begin_strategy_4(_,_):-
-    fail.
-strategy_4 :-
+begin_strategy_4(_,_).
+
+do1:-
     fxd_cell(I, J, _),
     begin_strategy_4(I, J).
-strategy_4.
-island_expansion_from_a_clue:-
-    strategy_4.
+do2:-
+    solve_cell(N,M,'green'),
+    begin_strategy_4(N,M),
+    fail.
+
+island_expansion_from_a_clue :-
+    do1,
+    do2.
+island_expansion_from_a_clue:- true.
 
 %avoiding_wall_area_of_2by2 (Masa)
 check_four_around_one(I, J) :-
@@ -670,7 +672,6 @@ check_four_around_one(I, J) :-
     return_color(I, J1, C3),cnt_blue(C3, R3),
     return_color(I1, J1, C4),cnt_blue(C4, R4),
     Total is R1 + R2 + R3 + R4,
-    %format('Checking cells: (~w,~w,~w)~n', [I, J, Total]),
     Total == 3,
     (
       ( C1 \= 'blue',C1 \= 'green', assert_land(I, J));
@@ -679,10 +680,8 @@ check_four_around_one(I, J) :-
       ( C4 \= 'blue',C4 \= 'green', assert_land(I1, J1))
      ),
     fail.
-check_four_around_one(_,_):-
-    fail.
 
-strategy_12:-
+avoiding_wall_area_of_2by2:-
     grid_size(N,M),
     N1 is N - 1,
     M1 is M - 1,
@@ -690,11 +689,7 @@ strategy_12:-
     between(1,M1,J),
     check_four_around_one(I,J),
     fail.
-strategy_12.
-avoiding_wall_area_of_2by2:-
-    strategy_12.
-
-
+avoiding_wall_area_of_2by2.
 
 % Wall Continuity (Tima)
 
@@ -785,7 +780,7 @@ unreachable_square:-
 
 
 
-solve :- 
+solve :-
 print('put sea around ones'),
 nl,
 put_sea_around_ones,
