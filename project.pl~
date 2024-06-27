@@ -1,6 +1,7 @@
 
 % fxd_cell(Row,col,num).
 fxd_cell(1,2,3).
+
 fxd_cell(1,6,1).
 
 fxd_cell(3,1,2).
@@ -30,7 +31,7 @@ solve_cell(2,1,'blue').
 solve_cell(2,2,'blue').
 solve_cell(2,3,'blue').
 solve_cell(2,4,'blue').
-solve_cell(2,5,'blue').
+%solve_cell(2,5,'blue').
 solve_cell(2,6,'blue').
 solve_cell(2,7,'blue').
 %
@@ -60,7 +61,7 @@ solve_cell(5,6,'blue').
 solve_cell(5,7,'green').
 %
 solve_cell(6,1,'blue').
-%solve_cell(6,2,'blue').
+solve_cell(6,2,'blue').
 solve_cell(6,3,'green').
 solve_cell(6,4,'blue').
 solve_cell(6,5,'blue').
@@ -387,7 +388,7 @@ nearby_neighbors_cells(I, J, [H1, H2, H3, H4]) :-
 
 % Diagonally adjacent clues - start (hamza) :
 
-diagonally_adjacent_clues() :- find_cells_with_number().
+diagonally_adjacent_clues :- find_cells_with_number().
 
 find_cells_with_number() :-
     findall((X,Y,Value), fxd_cell(X,Y,Value), List),
@@ -420,7 +421,7 @@ mark_adjacent_cell(X, Y, DX, DY) :-
    \+ solve_cell(X, Y,_),
     \+ fxd_cell(X, Y, _).
 
-surrounded_square() :-
+surrounded_square :-
     grid_size(GridX, GridY),  % Get the grid size
     X = 1,
     Y = 1,
@@ -692,7 +693,7 @@ avoiding_wall_area_of_2by2:- true.
 
 return_cell_from_nearby_can_become_sea(List, (X,Y)) :-
     member((X, Y), List),
-    (   \+solve_cell(X, Y, _), true; false).
+    \+solve_cell(X, Y, _),! .
 
 return_cell_from_nearby_can_become_sea(_, (-1, -1)).
 
@@ -712,9 +713,10 @@ nearby_of_list_of_neighBors_helper(I, J, [H1, H2, H3, H4]) :-
 
 nearby_of_list_of_neighBors([], _).
 nearby_of_list_of_neighBors([(I,J)|T], S):-
+    grid_size(N,M),
     nearby_of_list_of_neighBors_helper(I,J,L),
     remove_empty_lists(L,List),
-    nearby_empty_cells(I,J,7,7,L2),
+    nearby_empty_cells(I,J,N,M,L2),
     intersect(List,L2,L3),
     return_cell_from_nearby_can_become_sea(L3,S),
     (S \= (-1, -1), ! ; nearby_of_list_of_neighBors(T,S)).
@@ -739,13 +741,12 @@ give_cell_should_become_sea(_, (-1, -1)).
 wall_continuity_helper((I,J)):- assert_sea(I,J).
 
 wall_continuity:-
-    print_grid,
-    solve_cell(I,J,blue),
+        solve_cell(I,J,'blue'),
     all_nearby_cells(I,J,List),
     give_cell_should_become_sea(List,S),
     (S \= (-1, -1) ->
-        wall_continuity_helper(S); true), !.
-wall_continuity:- true.
+        wall_continuity_helper(S)),!.
+wall_continuity:- print_grid, true.
 
 
 solved :-
@@ -785,6 +786,7 @@ unreachable_square:-
     grid_size(N,M),
     unreachable_square_helper(N,M, N, M).
 
+
 solve :-
 
     print('unreachable square'),
@@ -793,6 +795,8 @@ solve :-
     unreachable_square,
     print_grid,
 
+    sleep(3),
+
 
     print('put sea around ones'),
     nl,
@@ -800,11 +804,17 @@ solve :-
     put_sea_around_ones,
     print_grid,
 
+    sleep(3),
+
+
     print('put sea between cells seperated by one'),
     nl,
     nl,
     put_sea_between_cells_seperated_by_one,
     print_grid,
+
+    sleep(3),
+
 
 
     print('diagonally adjacent clues'),
@@ -813,11 +823,16 @@ solve :-
     diagonally_adjacent_clues,
     print_grid,
 
+    sleep(3),
+
+
     print('avoiding wall area of 2 by 2'),
     nl,
     nl,
     avoiding_wall_area_of_2by2,
     print_grid,
+
+    sleep(3),
 
     print('surrounded square'),
     nl,
@@ -825,11 +840,17 @@ solve :-
     surrounded_square,
     print_grid,
 
+    sleep(3),
+
+
     print('sea expansion'),
     nl,
     nl,
     sea_expansion,
     print_grid,
+
+    sleep(3),
+
 
     % here two directions
     %print('expandable only in two directions'),
@@ -837,12 +858,18 @@ solve :-
     %island_expansion_from_a_clue,
     %print_grid,
 
+    %sleep(3),
+
+
 
     print('island expansion from a clue'),
     nl,
     nl,
     island_expansion_from_a_clue,
     print_grid,
+
+    sleep(3),
+
 
     print('island continuity'),
     nl,
@@ -856,11 +883,15 @@ solve :-
     sea_around_island,
     print_grid,
 
+    sleep(3),
+
+
     print('wall continuity'),
     nl,
     nl,
     wall_continuity,
     print_grid.
+
 
 
 
