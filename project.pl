@@ -1,7 +1,8 @@
 
 % fxd_cell(Row,col,num).
-fxd_cell(1,2,3).
 
+
+fxd_cell(1,2,3).
 fxd_cell(1,6,1).
 
 fxd_cell(3,1,2).
@@ -14,7 +15,7 @@ fxd_cell(6,3,2).
 
 fxd_cell(7,1,1).
 fxd_cell(7,5,1).
-fxd_cell(7,7,6).
+fxd_cell(7,7,5).
 
 % solve_cell()
 :- dynamic solve_cell/3.
@@ -239,7 +240,7 @@ sum_list_of_value([H|T],Sum):-
 
 % A function that collect the number of sea cells
 calculate_number_of_cells_sea(Sum):-
-    solve_cell(I,J,blue),
+    solve_cell(I,J,'blue'),
     all_nearby_cells(I,J,List),
     length(List, Sum),!.
 % A function bring A sum of the fxd_ cell value List
@@ -258,8 +259,11 @@ solved_cell_count(Count) :-
 % return true else false
 one_sea:-
     calculate_number_of_cells_sea(Sum1),
-    get_all_fxd_cells(Sum2),
+        get_all_fxd_cells(Sum2),
+
+
     solved_cell_count(Sum3),
+     write(Sum1),
     Sum1+Sum2-1 =:= Sum3.
 % tima_end
 
@@ -489,6 +493,7 @@ get_alone_cell(I,J):-
     all_nearby_cells(I,J,List),
     member((X,Y), List),
     fxd_cell(X, Y, Value),
+    write(Value),
     length(List, Length).
 
 % Island Continuity
@@ -527,7 +532,7 @@ island_continuity :-
     (   island_continuity_helper(I, J3) -> assert_land(I,J1) ; true),
     (   island_continuity_helper(I3, J) -> assert_land(I1,J) ; true),
     (   island_continuity_helper(I, J4) -> assert_land(I,J2) ; true),
-    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true).
+    (   island_continuity_helper(I4, J) -> assert_land(I2,J) ; true), fail,!.
 island_continuity :- true.
 %SARA
 %new print method
@@ -541,16 +546,22 @@ get_col(X):- grid_size(_,M) , between(1,M,Y),
     \+solve_cell(X,Y,_), write('  _    ')),
     fail.
 
+assert_green_for_fxd_cells:-
+    fxd_cell(I,J,_),
+    assert_land(I,J),
+    fail.
+assert_green_for_fxd_cells:- true.
 
 %stop when no more cells
-restart:- \+ solve_cell(_, _, _).
+restart1:- \+ solve_cell(_, _, _), assert_green_for_fxd_cells.
 % check if there is a fact exist, retract the fact, recursive call to
 % process the next cell
-restart:-
+restart1:-
     solve_cell(X, Y, Color),
     retract(solve_cell(X, Y, Color)),
     restart.
 
+restart:- restart1, assert_green_for_fxd_cells.
 
 % when a green cell have only two directions to expand, then the
 % diagonal cell will be sea
@@ -636,7 +647,6 @@ begin_strategy_4(I, J) :-
     return_color(I, J1, C3),cnt_blue(C3, R3),
     return_color(I, J2, C4),cnt_blue(C4, R4),
     Total is R1 + R2 + R3 + R4,
-
     Total == 3,
     (
       ( C1 \= 'blue',C1 \= 'green',  assert_land(I1, J));
@@ -649,25 +659,39 @@ begin_strategy_4(_,_).
 
 do1:-
     fxd_cell(I, J, _),
-    begin_strategy_4(I, J).
+    begin_strategy_4(I, J),fail.
 do2:-
     solve_cell(N,M,'green'),
     begin_strategy_4(N,M),
     fail.
 
 island_expansion_from_a_clue :-
-    do1,
-    do2.
+    do1.
 island_expansion_from_a_clue:- true.
 
 %avoiding_wall_area_of_2by2 (Masa)
+return_color2(I,J,E):-
+   grid_size(N,M),
+   (I > N ; J > M ; I < 1; J < 1),
+   E = 'blue',
+   !.
+return_color2(I,J,E):-
+    fxd_cell(I,J,_),
+    E = 'green',
+    !.
+return_color2(I, J, E) :-
+    (   solve_cell(I, J, X),
+        X \= false -> E = X ;   E = 'a'
+    ).
+
+
 check_four_around_one(I, J) :-
     I1 is I + 1,
     J1 is J + 1,
-    return_color(I, J, C1),cnt_blue(C1, R1),
-    return_color(I1, J, C2),cnt_blue(C2, R2),
-    return_color(I, J1, C3),cnt_blue(C3, R3),
-    return_color(I1, J1, C4),cnt_blue(C4, R4),
+    return_color2(I, J, C1),cnt_blue(C1, R1),
+    return_color2(I1, J, C2),cnt_blue(C2, R2),
+    return_color2(I, J1, C3),cnt_blue(C3, R3),
+    return_color2(I1, J1, C4),cnt_blue(C4, R4),
     Total is R1 + R2 + R3 + R4,
     Total == 3,
     (
@@ -746,7 +770,7 @@ wall_continuity:-
     give_cell_should_become_sea(List,S),
     (S \= (-1, -1) ->
         wall_continuity_helper(S)),!.
-wall_continuity:- print_grid, true.
+wall_continuity:- true.
 
 
 solved :-
@@ -795,7 +819,7 @@ solve :-
     unreachable_square,
     print_grid,
 
-    sleep(3),
+%    s%leep(1),
 
 
     print('put sea around ones'),
@@ -804,7 +828,7 @@ solve :-
     put_sea_around_ones,
     print_grid,
 
-    sleep(3),
+    %s%leep(1),
 
 
     print('put sea between cells seperated by one'),
@@ -813,7 +837,7 @@ solve :-
     put_sea_between_cells_seperated_by_one,
     print_grid,
 
-    sleep(3),
+    %sleep(1),
 
 
 
@@ -823,7 +847,7 @@ solve :-
     diagonally_adjacent_clues,
     print_grid,
 
-    sleep(3),
+   % sleep(1),
 
 
     print('avoiding wall area of 2 by 2'),
@@ -832,7 +856,7 @@ solve :-
     avoiding_wall_area_of_2by2,
     print_grid,
 
-    sleep(3),
+  %  sleep(1),
 
     print('surrounded square'),
     nl,
@@ -840,7 +864,7 @@ solve :-
     surrounded_square,
     print_grid,
 
-    sleep(3),
+ %   sleep(1),
 
 
     print('sea expansion'),
@@ -849,18 +873,26 @@ solve :-
     sea_expansion,
     print_grid,
 
-    sleep(3),
+%    s%leep(1),
+
+    print('avoiding wall area of 2 by 2'),
+    nl,
+    nl,
+    avoiding_wall_area_of_2by2,
+    print_grid,
+
+    %sleep(1),
+
+
 
 
     % here two directions
-    %print('expandable only in two directions'),
-    %nl,
-    %island_expansion_from_a_clue,
-    %print_grid,
+    print('expandable only in two directions'),
+    nl,
+    island_expansion_from_a_clue,
+    print_grid,
 
-    %sleep(3),
-
-
+   % sleep(1),
 
     print('island expansion from a clue'),
     nl,
@@ -868,7 +900,19 @@ solve :-
     island_expansion_from_a_clue,
     print_grid,
 
-    sleep(3),
+  %  sleep(1),
+
+
+
+     print('sea around island'),
+    nl,
+    nl,
+    sea_around_island,
+    print_grid,
+
+ %   sleep(1),
+
+
 
 
     print('island continuity'),
@@ -877,13 +921,7 @@ solve :-
     island_continuity,
     print_grid,
 
-    print('sea around island'),
-    nl,
-    nl,
-    sea_around_island,
-    print_grid,
-
-    sleep(3),
+%    sleep(1),
 
 
     print('wall continuity'),
